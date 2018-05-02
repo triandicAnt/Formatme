@@ -1,0 +1,13 @@
+[
+    {
+        "caption": "Formatme",
+        "id": "Formatme",
+        "children":
+            [
+                {
+                "caption": "Format me",
+                "command": "formatme"
+                }
+            ]
+    }
+]
