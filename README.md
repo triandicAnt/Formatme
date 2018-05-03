@@ -32,7 +32,9 @@ The formatting handles the following scenarions:
 5. Set your shortcut for formatting.
     1. Open Sublime key Bindings: `Sublime Text > Preferences > Key Bindings`.
     2. Add the following lines in User preferences(right window):
+    
       `{ "keys": ["ctrl+b"], "command": "formatme" }`
+      
       You can set formatting on save as well, but, currently it does the formatting and saves the file and the leaves the tab dirty. Your tab will show dirty, but the document is saved.
       ```json
       {
