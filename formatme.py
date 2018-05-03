@@ -26,7 +26,7 @@ Format apex code.
 16. '\n'     =>      2 or more \n to 2
 17. '; *'    =>      Process semicolon
 18. ' *!= *' =>      !=
-18. ' +'     =>      Trailing whitespaces
+19. ' +'     =>      Trailing whitespaces
 
 Usage : Select the text you want to format and press: CRTL + B
         Or Right click and select `Formatme->Format me`
