@@ -35,7 +35,7 @@ The formatting handles the following scenarions:
     
       `{ "keys": ["ctrl+b"], "command": "formatme" }`
       
-      You can set formatting on save as well, but, currently it does the formatting and saves the file and the leaves the tab dirty. Your tab will show dirty, but the document is saved.
+      You can set formatting on save as well, but, currently it does the formatting and saves the file and then leaves the tab `dirty`. Your tab will show `dirty`, but the document is saved.
       ```json
       {
       "keys": [
@@ -55,3 +55,4 @@ The formatting handles the following scenarions:
     }
     ```
       
+Please report bugs in the `Issue` section and any improvements are welcomed using `Pull Request`.
