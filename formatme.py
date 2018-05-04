@@ -27,6 +27,7 @@ Format apex code.
 17. '; *'       < => Process semicolon
 18. ' * != *'   < => !=
 19. ' +'        < => Trailing whitespaces
+20. 'for (..) {'< => single line loops should have { on same line
 
 Usage : Select the text you want to format and press: CRTL + B
         Or Right click and select `Formatme->Format me`
@@ -52,18 +53,34 @@ regex_dict = OrderedDict([
     (r' *\+\+ *', r'++'), #                    #++
     (r' *\-\- *', r'--'), #                    #--
     # (r' +\* +', r' * '), #                   # * - this is conflicting with /**
-    # (r'\/\/ *', r'// '), #                     # //
+    # (r'\/\/ *', r'// '), #                   # //
     (r' *\=\> *', r' => '), #                  # =>
     (r' *\=\= *', r' == '), #                  # ==
     (r' *\+\= *', r' += '), #                  # +=
     (r' *\-\= *', r' -= '), #                  # -=
     (r' *\*\= *', r' *= '), #                  # *=
     #(r' *\\= *', r' \\= '), #                 # \=
-    (r'\n{2, }', r'\n\n'), #                    # 2 or more \n to 2
+    (r'\n{2, }', r'\n\n'), #                   # 2 or more \n to 2
     (r' *; *', r'; '), #                       #;
-    (r' * != *', r' != '), #                    # !=
+    (r' * != *', r' != '), #                   # !=
     (r' +$', ''), #                            # remove trailing whitespaces
+    (r'(for|if|while) \(.+\)\n+\s*{', getLoop) # single line loops should have { on same line
 ])
+
+def getLoop(matchedobj):
+    stmt = matchedobj.group(0)
+    prefix = ''
+    if stmt.startswith('for '):
+        prefix = 'for '
+    elif stmt.startswith('if '):
+        prefix = 'if '
+    elif stmt.startswith('while '):
+        prefix = 'while '
+    else:
+        return stmt
+    stuff = re.compile('\(.*\)')
+    loop = matchedobj.group(0)
+    return prefix + stuff.findall(stmt)[0] + ' {'
 
 class FormatmeCommand(sublime_plugin.TextCommand):
 
