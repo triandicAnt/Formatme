@@ -22,6 +22,7 @@ The formatting handles the following scenarions:
 17. '; *'    =>      Process semicolon
 18. ' *!= *' =>      !=
 19. ' +'     =>      Trailing whitespaces
+20. 'for(..) =>      {'< => single line loops should have { on same line
 ```
 
 ## Installation
