@@ -8,27 +8,28 @@ from collections import OrderedDict
 """
 Format apex code.
 
-1.  `if (`      < => `if (`
-2.  `for (`     < => `for (`
-3.  `while (`   < => `while (`
-4.  `) {`       < => ') {'
-5.  '> {'       < => '> {'
-6.  ', +'       < => ', ' # take care of lines ending with comma
-7.  '='         < => ' = '
-8.  '+'         < => ' + '
-9.  '-'         < => ' - '
-10. '*'         < => ' * '
-11. '\'         < => ' \ '
-12. ' += '      < => ' += '
-13. ' -= '      < => ' -= '
-14. ' *= '      < => ' *= '
-15. '\='        < => ' \= '
-16. '\n'        < => 2 or more \n to 2
-17. '; *'       < => Process semicolon
-18. ' * != *'   < => !=
-19. ' +'        < => Trailing whitespaces
-20. 'for (..) {'< => single line loops should have { on same line
-21. Handle @isTest
+1.  `if (`                          < => `if (`
+2.  `for (`                         < => `for (`
+3.  `while (`                       < => `while (`
+4.  `) {`                           < => ') {'
+5.  '> {'                           < => '> {'
+6.  ', +'                           < => ', ' # take care of lines ending with comma
+7.  '='                             < => ' = '
+8.  '+'                             < => ' + '
+9.  '-'                             < => ' - '
+10. '*'                             < => ' * '
+11. '\'                             < => ' \ '
+12. ' += '                          < => ' += '
+13. ' -= '                          < => ' -= '
+14. ' *= '                          < => ' *= '
+15. '\='                            < => ' \= '
+16. '\n'                            < => 2 or more \n to 2
+17. '; *'                           < => Process semicolon
+18. ' * != *'                       < => !=
+19. ' +'                            < => Trailing whitespaces
+20. 'for (..) {'                    < => single line loops should have { on same line
+21. Handle @isTest                  < => testMethod is deprecated, replace it with @isTest.
+22. Handle class name brackets      < => Add space before bracket.
 
 Usage : Select the text you want to format and press: CRTL + B
         Or Right click and select `Formatme->Format me`
@@ -49,6 +50,12 @@ Remove the `testMethod` keyword from the test class methods and adding the keywo
 def remove_test_method(matchedobj):
     prefix = '\t@isTest\n'
     return prefix + matchedobj.group(1) + ' ' + matchedobj.group(2)
+
+"""
+Handle class name brackets.
+"""
+def class_name(matchedobj):
+    return matchedobj.group(1) + ' class ' + matchedobj.group(2).rstrip(' +') + ' {'
 
 
 regex_dict = OrderedDict([
@@ -80,8 +87,9 @@ regex_dict = OrderedDict([
     (r' *; *', r'; '), #                                                            #;
     (r' * != *', r' != '), #                                                        # !=
     (r' +$', ''), #                                                                 # remove trailing whitespaces
-    (r'(for|if|while) \(.+\)\n+\s*{',get_loop),                                     # single line loops should have { on same line
-    (r'(.+) testMethod (.+)', remove_test_method),                                  # handle @isTest
+    (r'(for|if|while) \(.+\)\n+\s*{',get_loop),#                                    # single line loops should have { on same line
+    (r'(.+) testMethod (.+)', remove_test_method), #                                # handle @isTest
+    (r'(.+) class (.+) *{', class_name), #                                          # class name brackets should contain the space before.
 ])
 
 
