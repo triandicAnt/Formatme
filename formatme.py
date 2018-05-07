@@ -28,6 +28,7 @@ Format apex code.
 18. ' * != *'   < => !=
 19. ' +'        < => Trailing whitespaces
 20. 'for (..) {'< => single line loops should have { on same line
+21. Handle @isTest
 
 Usage : Select the text you want to format and press: CRTL + B
         Or Right click and select `Formatme->Format me`
@@ -35,52 +36,55 @@ Usage : Select the text you want to format and press: CRTL + B
 PS : Please expect a little misbehavior of the code as its not trained for few unseen circumstances.
 """
 
+"""
+The one line for loop should have the curly bracket in the same line.
+"""
+def get_loop(matchedobj):
+    return matchedobj.group(0).split('\n')[0] + ' {'
+
+
+"""
+Remove the `testMethod` keyword from the test class methods and adding the keyword `@isTest`.
+"""
+def remove_test_method(matchedobj):
+    prefix = '\t@isTest\n'
+    return prefix + matchedobj.group(1) + ' ' + matchedobj.group(2)
+
+
 regex_dict = OrderedDict([
-    (r'if *\(', r'if ('), #                    # if
-    (r'\} *else *\{', r'} else {'), #          # else
-    (r'\} *else *if *\(', r'} else if ('), #   # else if
-    (r'for *\(', r'for ('), #                  # for
-    (r'while *\(', r'while ('), #              # while
-    (r'> *\{', r'> {'), #                      # > {
-    (r'\) *\{', r') {'), #                     # ) {
-    # (r'\w{', r' {'), #                       # {
-    # (r'} *', r'}'), #                        # }
-    (r', *', r', '), #                         #,
-    (r', *\n', r', \n'), #                     #, \n
-    #(r' += +', r' = '), #                     # =
-    #(r' +\+ +', r' + '), #                    # +
-    #(r' +\- +', r' - '), #                    # -
-    (r' *\+\+ *', r'++'), #                    #++
-    (r' *\-\- *', r'--'), #                    #--
-    # (r' +\* +', r' * '), #                   # * - this is conflicting with /**
-    # (r'\/\/ *', r'// '), #                   # //
-    (r' *\=\> *', r' => '), #                  # =>
-    (r' *\=\= *', r' == '), #                  # ==
-    (r' *\+\= *', r' += '), #                  # +=
-    (r' *\-\= *', r' -= '), #                  # -=
-    (r' *\*\= *', r' *= '), #                  # *=
-    #(r' *\\= *', r' \\= '), #                 # \=
-    (r'\n{2, }', r'\n\n'), #                   # 2 or more \n to 2
-    (r' *; *', r'; '), #                       #;
-    (r' * != *', r' != '), #                   # !=
-    (r' +$', ''), #                            # remove trailing whitespaces
-    (r'(for|if|while) \(.+\)\n+\s*{', getLoop) # single line loops should have { on same line
+    (r'if *\(', r'if ('), #                                                         # if
+    (r'\} *else *\{', r'} else {'), #                                               # else
+    (r'\} *else *if *\(', r'} else if ('), #                                        # else if
+    (r'for *\(', r'for ('), #                                                       # for
+    (r'while *\(', r'while ('), #                                                   # while
+    (r'> *\{', r'> {'), #                                                           # > {
+    (r'\) *\{', r') {'), #                                                          # ) {
+    # (r'\w{', r' {'), #                                                            # {
+    # (r'} *', r'}'), #                                                             # }
+    (r', *', r', '), #                                                              #,
+    (r', *\n', r', \n'), #                                                          #, \n
+    #(r' += +', r' = '), #                                                          # =
+    #(r' +\+ +', r' + '), #                                                         # +
+    #(r' +\- +', r' - '), #                                                         # -
+    (r' *\+\+ *', r'++'), #                                                         #++
+    (r' *\-\- *', r'--'), #                                                         #--
+    # (r' +\* +', r' * '), #                                                        # * - this is conflicting with /**
+    # (r'\/\/ *', r'// '), #                                                        # //
+    (r' *\=\> *', r' => '), #                                                       # =>
+    (r' *\=\= *', r' == '), #                                                       # ==
+    (r' *\+\= *', r' += '), #                                                       # +=
+    (r' *\-\= *', r' -= '), #                                                       # -=
+    (r' *\*\= *', r' *= '), #                                                       # *=
+    #(r' *\\= *', r' \\= '), #                                                      # \=
+    (r'\n{2, }', r'\n\n'), #                                                        # 2 or more \n to 2
+    (r' *; *', r'; '), #                                                            #;
+    (r' * != *', r' != '), #                                                        # !=
+    (r' +$', ''), #                                                                 # remove trailing whitespaces
+    (r'(for|if|while) \(.+\)\n+\s*{',get_loop),                                     # single line loops should have { on same line
+    (r'(.+) testMethod (.+)', remove_test_method),                                  # handle @isTest
 ])
 
-def getLoop(matchedobj):
-    stmt = matchedobj.group(0)
-    prefix = ''
-    if stmt.startswith('for '):
-        prefix = 'for '
-    elif stmt.startswith('if '):
-        prefix = 'if '
-    elif stmt.startswith('while '):
-        prefix = 'while '
-    else:
-        return stmt
-    stuff = re.compile('\(.*\)')
-    loop = matchedobj.group(0)
-    return prefix + stuff.findall(stmt)[0] + ' {'
+
 
 class FormatmeCommand(sublime_plugin.TextCommand):
 
