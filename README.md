@@ -24,6 +24,7 @@ The formatting handles the following scenarions:
 19. ' +'                                            =>      Trailing whitespaces
 20. 'for(..)                                        =>      {'< => single line loops should have { on same line
 21. Handle @isTest                                  =>      testMethod is deprecated. Replace it with `@isTest`
+22. Handle class names                              =>      Class name bracket should have a space before.
 ```
 
 ## Installation
@@ -34,12 +35,12 @@ The formatting handles the following scenarions:
 5. Set your shortcut for formatting.
     1. Open Sublime key Bindings: `Sublime Text > Preferences > Key Bindings`.
     2. Add the following lines in User preferences(right window):
-    
+
       `{ "keys": ["ctrl+b"], "command": "formatme" }`
-      
+
       You can set formatting on save as well, ~~but, currently it does the formatting and saves the file and then leaves the tab `dirty`. Your tab will show `dirty`, but the document is saved.~~
       The dirty window bug has been fixed.
-      
+
 ```json
       {
       "keys": [
