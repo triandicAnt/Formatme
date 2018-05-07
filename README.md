@@ -3,26 +3,27 @@ Formatting apex code.
 
 The formatting handles the following scenarions:
 ```unix
-1.  `if(`    =>      `if (`
-2.  `for(`   =>      `for (`
-3.  `while(` =>      `while (`
-4.  `){`     =>      ') {'
-5.  '>{'     =>      '> {'
-6.  ', +'    =>      ', ' # take care of lines ending with comma
-7.  '='      =>      ' = '
-8.  '+'      =>      ' + '
-9.  '-'      =>      ' - '
-10. '*'      =>      ' * '
-11. '\'      =>      ' \ '
-12. '+='     =>      ' += '
-13. '-='     =>      ' -= '
-14. '*='     =>      ' *= '
-15. '\='     =>      ' \= '
-16. '\n'     =>      2 or more \n to 2
-17. '; *'    =>      Process semicolon
-18. ' *!= *' =>      !=
-19. ' +'     =>      Trailing whitespaces
-20. 'for(..) =>      {'< => single line loops should have { on same line
+1.  `if(`                                           =>      `if (`
+2.  `for(`                                          =>      `for (`
+3.  `while(`                                        =>      `while (`
+4.  `){`                                            =>      ') {'
+5.  '>{'                                            =>      '> {'
+6.  ', +'                                           =>      ', ' # take care of lines ending with comma
+7.  '='                                             =>      ' = '
+8.  '+'                                             =>      ' + '
+9.  '-'                                             =>      ' - '
+10. '*'                                             =>      ' * '
+11. '\'                                             =>      ' \ '
+12. '+='                                            =>      ' += '
+13. '-='                                            =>      ' -= '
+14. '*='                                            =>      ' *= '
+15. '\='                                            =>      ' \= '
+16. '\n'                                            =>      2 or more \n to 2
+17. '; *'                                           =>      Process semicolon
+18. ' *!= *'                                        =>      !=
+19. ' +'                                            =>      Trailing whitespaces
+20. 'for(..)                                        =>      {'< => single line loops should have { on same line
+21. Handle @isTest                                  =>      testMethod is deprecated. Replace it with `@isTest`
 ```
 
 ## Installation
@@ -57,7 +58,7 @@ The formatting handles the following scenarions:
       }
     }
 ```
-## Imporvements from the previous version
+## Improvements from the previous version
 1. You don't have to select the text to do formatting.
 2. the trailing space with `;` has been fixed.
 
