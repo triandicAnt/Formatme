@@ -58,7 +58,7 @@ The formatting handles the following scenarions:
       }
     }
 ```
-## Imporvements from the previous version
+## Improvements from the previous version
 1. You don't have to select the text to do formatting.
 2. the trailing space with `;` has been fixed.
 
