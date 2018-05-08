@@ -22,7 +22,7 @@ The formatting handles the following scenarions:
 17. '; *'                                           =>      Process semicolon
 18. ' *!= *'                                        =>      !=
 19. ' +'                                            =>      Trailing whitespaces
-20. 'for(..)                                        =>      {'< => single line loops should have { on same line
+20. 'for(..)                                        =>      single line loops should have { on same line
 21. Handle @isTest                                  =>      testMethod is deprecated. Replace it with `@isTest`
 22. Handle class names                              =>      Class name bracket should have a space before.
 ```
