@@ -97,6 +97,7 @@ regex_dict = OrderedDict([
 class FormatmeCommand(sublime_plugin.TextCommand):
 
      def run(self, edit):
+        file_name = self.view.window().active_view().file_name()
         if not file_name.endswith('.cls'): # only execute on Apex classes
             return
         # select all text
