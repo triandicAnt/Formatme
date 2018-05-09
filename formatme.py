@@ -5,6 +5,9 @@ import sublime_plugin
 import re
 from collections import OrderedDict
 
+# do you want to format the whole file or only a selection?
+process_all = True
+
 """
 Format apex code.
 
@@ -114,30 +117,35 @@ regex_dict = OrderedDict([
 
 class FormatmeCommand(sublime_plugin.TextCommand):
 
-     def run(self, edit):
+    def run(self, edit):
         # only execute on Apex classes ending with `.cls`
         file_name = self.view.window().active_view().file_name()
         if not file_name or not file_name.endswith('.cls'):
             return
-        # select all text
-        all_text = self.view.substr(sublime.Region(0, self.view.size()))
-        for key, value in regex_dict.items():
-            all_text = re.sub(key, value, all_text, flags=re.MULTILINE)
-        self.view.replace(edit, sublime.Region(0, self.view.size()), all_text.rstrip(' +'))
-        # The below code is for selected text
-        # get user selection
-        # for region in self.view.sel():
-        #     # if selection not empty then
-        #     if not region.empty():
-        #         selected_text = self.view.substr(region)
-        #         for key, value in regex_dict.items():
-        #             selected_text = re.sub(key, value, selected_text, flags=re.MULTILINE)
-        #         # replace content in view while removing any trailing whitespaces.
-        #         self.view.replace(edit, region, selected_text.rstrip(' +'))
+        if process_all:
+            process_whole_file(self, edit) # format the entire file
+        else:
+            process_selection(self, edit) # format only the selected text
 
+def process_whole_file(self, edit):
+    # select all text
+    all_text = self.view.substr(sublime.Region(0, self.view.size()))
+    for key, value in regex_dict.items():
+        all_text = re.sub(key, value, all_text, flags=re.MULTILINE)
+    self.view.replace(edit, sublime.Region(0, self.view.size()), all_text.rstrip(' +'))
+
+def process_selection():
+    # get user selection
+    for region in self.view.sel():
+        # if selection not empty then
+        if not region.empty():
+            selected_text = self.view.substr(region)
+            for key, value in regex_dict.items():
+                selected_text = re.sub(key, value, selected_text, flags=re.MULTILINE)
+            # replace content in view while removing any trailing whitespaces.
+            self.view.replace(edit, region, selected_text.rstrip(' +'))
 
 class RemoveDirty(sublime_plugin.EventListener):
-
-  # "save" event hook to remove dirty window
-  def on_post_save_async(self, view):
-    view.run_command("revert")
+    # "save" event hook to remove dirty window
+    def on_post_save_async(self, view):
+        view.run_command("revert")
