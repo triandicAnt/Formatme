@@ -30,6 +30,8 @@ Format apex code.
 20. 'for (..) {'                    < => single line loops should have { on same line
 21. Handle @isTest                  < => testMethod is deprecated, replace it with @isTest.
 22. Handle class name brackets      < => Add space before bracket.
+23. Process if true                 < => if (true_flag) {}
+24. Process if false                < => if (!false_flag) {}
 
 Usage : Select the text you want to format and press: CRTL + B
         Or Right click and select `Formatme->Format me`
@@ -56,6 +58,20 @@ Handle class name brackets.
 """
 def class_name(matchedobj):
     return matchedobj.group(1) + ' class ' + matchedobj.group(2).rstrip(' +') + ' {'
+
+
+"""
+process if(true_flag) {
+"""
+def process_if_true(matchedobj):
+    return matchedobj.group(1).rstrip(' +') + matchedobj.group(3)
+
+
+"""
+process if(!false_flag) {}
+"""
+def process_if_false(matchedobj):
+    return matchedobj.group(1).rstrip(' +').replace('(', '(!') + matchedobj.group(3)
 
 
 regex_dict = OrderedDict([
@@ -90,6 +106,8 @@ regex_dict = OrderedDict([
     (r'(for|if|while) \(.+\)\n+\s*{',get_loop),#                                    # single line loops should have { on same line
     (r'(.+) testMethod (.+)', remove_test_method), #                                # handle @isTest
     (r'(.+) class (.+) *{', class_name), #                                          # class name brackets should contain the space before.
+    (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true), #                   # process if(true_flag) {}
+    (r'(.+)(\s*==\s*false|\s*!=\s*true)(.+)', process_if_false), #                  # process if(!false_flag) {}
 ])
 
 
@@ -97,8 +115,9 @@ regex_dict = OrderedDict([
 class FormatmeCommand(sublime_plugin.TextCommand):
 
      def run(self, edit):
+        # only execute on Apex classes ending with `.cls`
         file_name = self.view.window().active_view().file_name()
-        if not file_name.endswith('.cls'): # only execute on Apex classes
+        if not file_name or not file_name.endswith('.cls'):
             return
         # select all text
         all_text = self.view.substr(sublime.Region(0, self.view.size()))
