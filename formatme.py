@@ -109,10 +109,16 @@ process equal override
 """
 def process_equal_override(matchedobj):
     stmt = matchedobj.group(0)
-    print(stmt)
     for k, v in equal_dict.items():
         stmt = stmt.replace(k, v)
     return stmt
+
+"""
+process equal override
+"""
+def process_comma(matchedobj):
+    return matchedobj.group(1).rstrip(' +') + ' '
+
 
 regex_dict = OrderedDict([
     (r'if *\(', r'if ('), #                                                         # if
@@ -124,7 +130,7 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'), #                                                          # ) {
     # (r'\w{', r' {'), #                                                            # {
     # (r'} *', r'}'), #                                                             # }
-    (r', *', r', '), #                                                              #,
+    (r'(\, *)[^\'\,\'|\w]', process_comma), #                                       #,
     (r', *\n', r', \n'), #                                                          #, \n
     (r' *= *', r' = '), #                                                           # =
     (r'(=  =|\+ =|\- =|\* =|= >|/ =|! =)', process_equal_override), #               # process equal overide
@@ -150,8 +156,8 @@ regex_dict = OrderedDict([
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false), #               # process == false
     (r'\s*\=\=\s*true', process_true), #                                            # process == true
     (r'\s*\!\=\s*false', process_true), #                                           # process != false
-    (r'^\s*(for|if|while)[^{]+{$', process_multiline_loop), #                       # process multiline loop
-    (r'(for|if|while)\s*\(.+\)\n+\s*{',get_loop),#                                  # single line loops should have { on same line
+    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop), #                       # process multiline loop
+    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),#                                   # single line loops should have { on same line
 ])
 
 
