@@ -103,7 +103,7 @@ def process_if_true(matchedobj):
 process == false
 """
 def process_if_false(matchedobj):
-     return '!' + re.compile('\s*==\s*').split(matchedobj.group(0))[0]
+     return '!' + re.compile(r'\s*==\s*').split(matchedobj.group(0))[0]
 
 """
 process == true OR != false
@@ -153,7 +153,7 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'), #                                                          # ) {
     # (r'\w{', r' {'), #                                                            # {
     # (r'} *', r'}'), #                                                             # }
-    (r'(\, *)[^\'\,\'|\w]', process_comma), #                                       #,
+    (r'(\, *[^\'\,\'|\w|\n])', process_comma), #                                       #,
     (r', *\n', r', \n'), #                                                          #, \n
     (r' *= *', r' = '), #                                                           # =
     (r'(=  =|\+ =|\- =|\* =|= >|/ =|! =)', process_equal_override), #               # process equal overide
@@ -170,7 +170,7 @@ regex_dict = OrderedDict([
     (r' *\*\= *', r' *= '), #                                                       # *=
     (r' */= *', r' /= '), #                                                         # /=
     (r'\n{2, }', r'\n\n'), #                                                        # 2 or more \n to 2
-    (r' *; *', r'; '), #                                                            #;
+    (r' *; *', r';'), #                                                            #;
     (r' *!= *', r' != '), #                                                         # !=
     (r' +$', ''), #                                                                 # remove trailing whitespaces
     (r'(.+) testMethod (.+)', remove_test_method), #                                # handle @isTest
