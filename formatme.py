@@ -71,10 +71,10 @@ def process_if_true(matchedobj):
 
 
 """
-process if(!false_flag) {}
+process == false
 """
 def process_if_false(matchedobj):
-    return matchedobj.group(1).rstrip(' +').replace('(', '(!') + matchedobj.group(3)
+     return '!' + re.compile('\s*==\s*').split(matchedobj.group(0))[0]
 
 
 regex_dict = OrderedDict([
@@ -110,7 +110,7 @@ regex_dict = OrderedDict([
     (r'(.+) testMethod (.+)', remove_test_method), #                                # handle @isTest
     (r'(.+) class (.+) *{', class_name), #                                          # class name brackets should contain the space before.
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true), #                   # process if(true_flag) {}
-    (r'(.+)(\s*==\s*false|\s*!=\s*true)(.+)', process_if_false), #                  # process if(!false_flag) {}
+    #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false), #                  # process if(!false_flag) {}
 ])
 
 
@@ -134,7 +134,7 @@ def process_whole_file(self, edit):
         all_text = re.sub(key, value, all_text, flags=re.MULTILINE)
     self.view.replace(edit, sublime.Region(0, self.view.size()), all_text.rstrip(' +'))
 
-def process_selection():
+def process_selection(self, edit):
     # get user selection
     for region in self.view.sel():
         # if selection not empty then
