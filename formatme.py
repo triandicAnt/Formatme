@@ -53,6 +53,18 @@ equal_dict = {
 }
 
 """
+Get leading spaces before statement
+
+"""
+def get_leading_spaces(statement):
+    leading_space_count = len(statement) - len(statement.lstrip(' '))
+    leading_space = ''
+    while(leading_space_count > 0):
+        leading_space += ' '
+        leading_space_count -= 1
+    return leading_space
+
+"""
 The one line for loop should have the curly bracket in the same line.
 """
 def get_loop(matchedobj):
@@ -63,12 +75,7 @@ The multiline line for loop should have the curly bracket in next line.
 """
 def process_multiline_loop(matchedobj):
     stmt = matchedobj.group(0).strip('\n+')
-    leading_space_count = len(stmt) - len(stmt.lstrip(' '))
-    leading_space = ''
-    while(leading_space_count > 0):
-        leading_space += ' '
-        leading_space_count -= 1
-    return stmt[:-1].strip('\n+').rstrip(' +').rstrip('\n+')+'\n' + leading_space + '{'
+    return stmt[:-1].strip('\n+').rstrip(' +').rstrip('\n+')+'\n' + get_leading_spaces(stmt) + '{'
 
 
 """
@@ -119,8 +126,24 @@ process equal override
 def process_comma(matchedobj):
     return matchedobj.group(1).rstrip(' +') + ' '
 
+"""
+process single line if else
+"""
+def single_line_if_else(matchedobj):
+    stmt = matchedobj.group(0).lstrip()
+    if '\n' in stmt and '{' not in stmt:
+        stmts = matchedobj.group(0).split('\n')
+        if not stmts[0]:
+            del stmts[0]
+        return (stmts[0] + ' {'
+            + '\n' + stmts[1]
+            + '\n'
+            + get_leading_spaces(stmts[0]) + '}')
+    return matchedobj.group(0)
+
 
 regex_dict = OrderedDict([
+    (r'^\s*(if|else)[^;{]+(;)', single_line_if_else),#                                  # single line if else
     (r'if *\(', r'if ('), #                                                         # if
     (r'\} *else *\{', r'} else {'), #                                               # else
     (r'\} *else *if *\(', r'} else if ('), #                                        # else if
@@ -156,11 +179,24 @@ regex_dict = OrderedDict([
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false), #               # process == false
     (r'\s*\=\=\s*true', process_true), #                                            # process == true
     (r'\s*\!\=\s*false', process_true), #                                           # process != false
-    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop), #                       # process multiline loop
+    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop), #                        # process multiline loop
     (r'(for|if|while) *\(.+\)\n+ *{', get_loop),#                                   # single line loops should have { on same line
 ])
 
-
+regex_soql = OrderedDict([
+    (r'(?i)\bSELECT\b *' , r'select '),
+    (r'(?i)\bFROM\b *' , r'from '),
+    (r'(?i)\bWHERE\b *' , r'where '),
+    (r'(?i)\bLIMIT\b *' , r'limit '),
+    (r'(?i)\bGROUP\b *' , r'group '),
+    (r'(?i)\bORDER by\b *' , r'order '),
+    (r'(?i)\bHAVING\b *' , r'having'),
+    # (r'[select (\s|\w|,|(|))+ FROM ' : select_from),
+    # (r'[select (\s|\w|,|(|))+ from (\s|\w)+ WHERE ', select_where),
+    # (r'[select (\s|\w|,|(|))+ from (\s|\w|\W)+ LIMIT ', select_limit),
+    # (r'[select (\s|\w|,|(|))+ from (\s|\w|\W)+ ORDER BY ', select_order),
+    # (r'[select (\s|\w|,|(|))+ from (\s|\w|\W)+ GROUP BY ', select_group_by),
+])
 
 class FormatmeCommand(sublime_plugin.TextCommand):
 
@@ -179,6 +215,8 @@ def process_whole_file(self, edit):
     all_text = self.view.substr(sublime.Region(0, self.view.size()))
     for key, value in regex_dict.items():
         all_text = re.sub(key, value, all_text, flags=re.MULTILINE)
+    # for key, value in regex_soql.items():
+    #     all_text = re.sub(key, value, all_text, flags=re.MULTILINE)
     self.view.replace(edit, sublime.Region(0, self.view.size()), all_text.rstrip(' +'))
 
 def process_selection(self, edit):
