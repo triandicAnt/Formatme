@@ -42,11 +42,33 @@ Usage : Select the text you want to format and press: CRTL + B
 PS : Please expect a little misbehavior of the code as its not trained for few unseen circumstances.
 """
 
+equal_dict = {
+    '=  =' : ' == ',
+    '+ =' : ' += ',
+    '- =' : ' -= ',
+    '* =' : ' *= ',
+    '/ =' : ' /= ',
+    '= >' : ' => ',
+    '! =' : ' != ',
+}
+
 """
 The one line for loop should have the curly bracket in the same line.
 """
 def get_loop(matchedobj):
     return matchedobj.group(0).split('\n')[0] + ' {'
+
+"""
+The multiline line for loop should have the curly bracket in next line.
+"""
+def process_multiline_loop(matchedobj):
+    stmt = matchedobj.group(0).strip('\n+')
+    leading_space_count = len(stmt) - len(stmt.lstrip(' '))
+    leading_space = ''
+    while(leading_space_count > 0):
+        leading_space += ' '
+        leading_space_count -= 1
+    return stmt[:-1].strip('\n+').rstrip(' +').rstrip('\n+')+'\n' + leading_space + '{'
 
 
 """
@@ -64,7 +86,7 @@ def class_name(matchedobj):
 
 
 """
-process if(true_flag) {
+process == true {
 """
 def process_if_true(matchedobj):
     return matchedobj.group(1).rstrip(' +') + matchedobj.group(3)
@@ -76,6 +98,21 @@ process == false
 def process_if_false(matchedobj):
      return '!' + re.compile('\s*==\s*').split(matchedobj.group(0))[0]
 
+"""
+process == true OR != false
+"""
+def process_true(matchedobj):
+     return ''
+
+"""
+process equal override
+"""
+def process_equal_override(matchedobj):
+    stmt = matchedobj.group(0)
+    print(stmt)
+    for k, v in equal_dict.items():
+        stmt = stmt.replace(k, v)
+    return stmt
 
 regex_dict = OrderedDict([
     (r'if *\(', r'if ('), #                                                         # if
@@ -89,7 +126,8 @@ regex_dict = OrderedDict([
     # (r'} *', r'}'), #                                                             # }
     (r', *', r', '), #                                                              #,
     (r', *\n', r', \n'), #                                                          #, \n
-    #(r' += +', r' = '), #                                                          # =
+    (r' *= *', r' = '), #                                                           # =
+    (r'(=  =|\+ =|\- =|\* =|= >|/ =|! =)', process_equal_override), #               # process equal overide
     #(r' +\+ +', r' + '), #                                                         # +
     #(r' +\- +', r' - '), #                                                         # -
     (r' *\+\+ *', r'++'), #                                                         #++
@@ -101,16 +139,19 @@ regex_dict = OrderedDict([
     (r' *\+\= *', r' += '), #                                                       # +=
     (r' *\-\= *', r' -= '), #                                                       # -=
     (r' *\*\= *', r' *= '), #                                                       # *=
-    #(r' *\\= *', r' \\= '), #                                                      # \=
+    (r' */= *', r' /= '), #                                                         # /=
     (r'\n{2, }', r'\n\n'), #                                                        # 2 or more \n to 2
     (r' *; *', r'; '), #                                                            #;
     (r' *!= *', r' != '), #                                                         # !=
     (r' +$', ''), #                                                                 # remove trailing whitespaces
-    (r'(for|if|while) \(.+\)\n+\s*{',get_loop),#                                    # single line loops should have { on same line
     (r'(.+) testMethod (.+)', remove_test_method), #                                # handle @isTest
     (r'(.+) class (.+) *{', class_name), #                                          # class name brackets should contain the space before.
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true), #                   # process if(true_flag) {}
-    #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false), #                  # process if(!false_flag) {}
+    #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false), #               # process == false
+    (r'\s*\=\=\s*true', process_true), #                                            # process == true
+    (r'\s*\!\=\s*false', process_true), #                                           # process != false
+    (r'^\s*(for|if|while)[^{]+{$', process_multiline_loop), #                       # process multiline loop
+    (r'(for|if|while)\s*\(.+\)\n+\s*{',get_loop),#                                  # single line loops should have { on same line
 ])
 
 
