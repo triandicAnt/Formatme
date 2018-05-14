@@ -50,6 +50,8 @@ equal_dict = {
     '/ =' : ' /= ',
     '= >' : ' => ',
     '! =' : ' != ',
+    '> =' : ' >= ',
+    '< =' : ' <= ',
 }
 
 """
@@ -156,7 +158,7 @@ regex_dict = OrderedDict([
     (r'(\, *[^\'\,\'|\w|\n])', process_comma), #                                       #,
     (r', *\n', r', \n'), #                                                          #, \n
     (r' *= *', r' = '), #                                                           # =
-    (r'(=  =|\+ =|\- =|\* =|= >|/ =|! =)', process_equal_override), #               # process equal overide
+    (r'(=  =|\+ =|\- =|\* =|= >|/ =|! =|> =|< =)', process_equal_override), #       # process equal overide
     #(r' +\+ +', r' + '), #                                                         # +
     #(r' +\- +', r' - '), #                                                         # -
     (r' *\+\+ *', r'++'), #                                                         #++
