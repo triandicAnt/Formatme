@@ -53,10 +53,18 @@ def process_multiline_loop(matchedobj):
 
 """
 Remove the `testMethod` keyword from the test class methods and adding the keyword `@isTest`.
+Remove `private` from test method definition
 """
 def remove_test_method(matchedobj):
-    prefix = '\t@isTest\n'
-    return prefix + matchedobj.group(1) + ' ' + matchedobj.group(2)
+    str = '\t@isTest\n'
+    m1 = matchedobj.group(1)
+    if 'private' in m1:
+        x = m1.split('private ')
+        str += x[0] + x[1]
+    else:
+        str += m1
+    str += ' ' + matchedobj.group(2)
+    return str
 
 """
 Handle class name brackets.
@@ -81,7 +89,6 @@ process equal override
 """
 def process_equal_override(matchedobj):
     stmt = matchedobj.group(0)
-    print('--------------' + stmt)
     for k, v in equal_dict.items():
         # stmt = stmt.replace(k, v)
         stmt = re.sub(k, v, stmt, flags=re.MULTILINE)
