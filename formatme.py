@@ -123,7 +123,7 @@ regex_dict = OrderedDict([
     # (r'\w{', r' {'),                                                              #8)  ?
     # (r'} *', r'}'),                                                               #9)  ?
     (r'(\, *[^\'\,\'|\w|\n])', process_comma),                                      #10) 1 space after `, `
-    (r', *\n', r', \n'),                                                            #11) 1 newline after `, `
+    (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
     (r' *= *', r' = '),                                                             #12) 1 space around ` = `
     (r' *= *= *', process_equal_override),                                          #13a) ` == `
     (r' *\+ *= *', process_equal_override),                                         #13b) ` += `
@@ -154,7 +154,7 @@ regex_dict = OrderedDict([
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #31) remove `== true` or `!= false`
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #32) convert `x == false` to `!x`
     (r'^ *(for|if|while)[^{]+{$', process_multiline_loop),                          #33) 1 newline between multiline forloop and `{`
-    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),                                    #34) no newline between `for (..) {`
+    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),                                    #34) no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                             #35) lowercase soql keyword `select`
     (r'(?i)\bFROM\b *' , r'from '),                                                 #36) lowercase soql keyword `from`
     (r'(?i)\bWHERE\b *' , r'where '),                                               #37) lowercase soql keyword `where`
