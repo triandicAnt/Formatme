@@ -115,6 +115,10 @@ def single_line_if_else(matchedobj):
             + get_leading_spaces(stmts[0]) + '}')
     return matchedobj.group(0)
 
+"""
+"""
+def remove_trailing_newline(matchedobj):
+    return '\n' + matchedobj.group(0).split('\n\n')[1]
 
 regex_dict = OrderedDict([
     ###### RULE #######                                                             ###### DOCUMENTATION ######
@@ -168,6 +172,7 @@ regex_dict = OrderedDict([
     (r'(?i)\bGROUP BY\b *' , r'group by'),                                          #40) lowercase soql keyword `group by`
     (r'(?i)\bORDER BY\b *' , r'order by'),                                          #41) lowercase soql keyword `order by`
     (r'(?i)\bHAVING\b *' , r'having'),                                              #42) lowercase soql keyword `having`
+    (r'\n{2}\s*}', remove_trailing_newline),                                        #43) remove trailing newline at end of functions
 ])
 
 class FormatmeCommand(sublime_plugin.TextCommand):
