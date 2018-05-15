@@ -43,15 +43,15 @@ PS : Please expect a little misbehavior of the code as its not trained for few u
 """
 
 equal_dict = {
-    '=  =' : ' == ',
-    '+ =' : ' += ',
-    '- =' : ' -= ',
-    '* =' : ' *= ',
-    '/ =' : ' /= ',
-    '= >' : ' => ',
-    '! =' : ' != ',
-    '> =' : ' >= ',
-    '< =' : ' <= ',
+    r' *= *= *' : ' == ',
+    r' *\+ *= *' : ' += ',
+    r' *- *= *' : ' -= ',
+    r' *\* *= *' : ' *= ',
+    r' *\/ *= *' : ' /= ',
+    r' *= *> *' : ' => ',
+    r' *\! *= *' : ' != ',
+    r' *> *= *' : ' >= ',
+    r' *< *= *' : ' <= ',
 }
 
 """
@@ -118,8 +118,10 @@ process equal override
 """
 def process_equal_override(matchedobj):
     stmt = matchedobj.group(0)
+    print('--------------' + stmt)
     for k, v in equal_dict.items():
-        stmt = stmt.replace(k, v)
+        # stmt = stmt.replace(k, v)
+        stmt = re.sub(k, v, stmt, flags=re.MULTILINE)
     return stmt
 
 """
@@ -158,7 +160,7 @@ regex_dict = OrderedDict([
     (r'(\, *[^\'\,\'|\w|\n])', process_comma), #                                       #,
     (r', *\n', r', \n'), #                                                          #, \n
     (r' *= *', r' = '), #                                                           # =
-    (r'(=  =|\+ =|\- =|\* =|= >|/ =|! =|> =|< =)', process_equal_override), #       # process equal overide
+    (r'( *= *= *| *\+ *= *| *\- *= *| *\* *= *| *= *> *| *\/ *= *| *\! *= *| *> *= *| *< *= *)', process_equal_override),# process equal overide
     #(r' +\+ +', r' + '), #                                                         # +
     #(r' +\- +', r' - '), #                                                         # -
     (r' *\+\+ *', r'++'), #                                                         #++
