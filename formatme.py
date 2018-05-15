@@ -141,7 +141,7 @@ regex_dict = OrderedDict([
     (r'(.+) class (.+) *{', class_name),                                            #30) 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #31) remove `== true` or `!= false`
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #32) convert `x == false` to `!x`
-    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop),                          #33) 1 newline between multiline forloop and `{`
+    (r'^ *(for|if|while)[^}]+{$', process_multiline_loop),                          #33) 1 newline between multiline forloop and `{`
     (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                     #34) no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                             #35) lowercase soql keyword `select`
     (r'(?i)\bFROM\b *' , r'from '),                                                 #36) lowercase soql keyword `from`
