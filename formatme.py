@@ -157,7 +157,7 @@ regex_dict = OrderedDict([
     (r' *\*\= *', r' *= '),                                                         #24) 1 space around ` *= `
     (r' */= *', r' /= '),                                                           #25) 1 space around ` /= `
     (r'\n{2, }', r'\n\n'),                                                          #26) at most 2 newlines
-    (r' *; *', r';'),                                                               #27) no spaces around `;`
+    (r' *; *\n', r';\n'),                                                           #27) no spaces around `;`
     (r' +$', ''),                                                                   #28) no trailing whitespaces
     (r'(.+) testMethod (.+)', remove_test_method),                                  #29) replace `testMethod` with `@isTest`
     (r'(.+) class (.+) *{', class_name),                                            #30) 1 space between `SampleClass {`
