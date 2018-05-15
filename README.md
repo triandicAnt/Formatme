@@ -1,30 +1,44 @@
 # Formatme
 Formatting apex code.
 
-The formatting handles the following scenarions:
+The formatting handles the following scenarios:
 ```unix
-1.  `if(`                                           =>      `if (`
-2.  `for(`                                          =>      `for (`
-3.  `while(`                                        =>      `while (`
-4.  `){`                                            =>      ') {'
-5.  '>{'                                            =>      '> {'
-6.  ', +'                                           =>      ', ' # take care of lines ending with comma
-7.  '='                                             =>      ' = '
-8.  '+'                                             =>      ' + '
-9.  '-'                                             =>      ' - '
-10. '*'                                             =>      ' * '
-11. '\'                                             =>      ' \ '
-12. '+='                                            =>      ' += '
-13. '-='                                            =>      ' -= '
-14. '*='                                            =>      ' *= '
-15. '\='                                            =>      ' \= '
-16. '\n'                                            =>      2 or more \n to 2
-17. '; *'                                           =>      Process semicolon
-18. ' *!= *'                                        =>      !=
-19. ' +'                                            =>      Trailing whitespaces
-20. 'for(..)                                        =>      single line loops should have { on same line
-21. Handle @isTest                                  =>      testMethod is deprecated. Replace it with `@isTest`
-22. Handle class names                              =>      Class name bracket should have a space before.
+- `if(`                                           =>      `if (`
+- `}else{`                                        =>      `} else {`
+- `}else if(`                                     =>      `else if (`
+- `for(`                                          =>      `for (`
+- `while(`                                        =>      `while (`
+- `){`                                            =>      `) {`
+- `>{`                                            =>      `> {`
+- `,`                                             =>      `, `
+- `=`                                             =>      ` = `
+- `+`                                             =>      ` + `
+- `-`                                             =>      ` - `
+- `*`                                             =>      ` * `
+- `\`                                             =>      ` \ `
+- `+=`                                            =>      ` += `
+- `-=`                                            =>      ` -= `
+- `*=`                                            =>      ` *= `
+- `\=`                                            =>      ` \= `
+- `==`                                            =>      ` == `
+- `!=`                                            =>      ` != `
+- `=>`                                            =>      ` => `
+- `>=`                                            =>      ` >= `
+- `<=`                                            =>      ` <= `
+- `++`                                            =>      ` ++ `
+- `--`                                            =>      ` -- `
+- `\n\n`                                          =>      at most 2 newlines
+- `  `                                            =>      no trailing whitespaces
+- `; `                                            =>      `;`
+- `bool == true` or `bool != false`               =>      `bool`
+- `bool == false`                                 =>      `!bool`
+- `for(..)                                        =>      single line loops should have { on same line
+- `testMethod`                                    =>      `@isTest`
+- `SampleClassName{`                              =>      `SampleClassName {`
+- `[SELECT ... FROM ... WHERE]`                   =>      `[select ... from ... where]` lowercase SOQL keywords
+- single line if/else block should be encased with curly braces
+- 1 newline between multiline forloop and `{`
+- no newline between singline forloop and `{`
 ```
 
 ## Installation
@@ -34,15 +48,10 @@ The formatting handles the following scenarions:
 4. Git clone this repo in that directory: `git clone https://github.com/triandicAnt/Formatme.git`.
 5. Set your shortcut for formatting.
     1. Open Sublime key Bindings: `Sublime Text > Preferences > Key Bindings`.
-    2. Add the following lines in User preferences(right window):
-
-      `{ "keys": ["ctrl+b"], "command": "formatme" }`
-
-      You can set formatting on save as well, ~~but, currently it does the formatting and saves the file and then leaves the tab `dirty`. Your tab will show `dirty`, but the document is saved.~~
-      The dirty window bug has been fixed.
-
+    2. Add the following lines in User preferences(right window): `{ "keys": ["ctrl+b"], "command": "formatme" }`
+       You can set formatting on save as well:
 ```json
-      {
+    {
       "keys": [
         "super+s"
       ],
@@ -59,8 +68,5 @@ The formatting handles the following scenarions:
       }
     }
 ```
-## Improvements from the previous version
-1. You don't have to select the text to do formatting.
-2. the trailing space with `;` has been fixed.
 
 Please report bugs in the `Issue` section and any improvements are welcomed using `Pull Request`.
