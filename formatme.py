@@ -78,12 +78,6 @@ def process_if_false(matchedobj):
      return '!' + re.compile(r'\s*==\s*').split(matchedobj.group(0))[0]
 
 """
-process == true OR != false
-"""
-def process_true(matchedobj):
-     return ''
-
-"""
 process equal override
 """
 def process_equal_override(matchedobj):
@@ -128,16 +122,24 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
     # (r'\w{', r' {'),                                                              #8)  ?
     # (r'} *', r'}'),                                                               #9)  ?
-    (r'(\, *[^\'\,\'|\w|\n])', process_comma),                                      #10) ?
+    (r'(\, *[^\'\,\'|\w|\n])', process_comma),                                      #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) 1 newline after `, `
     (r' *= *', r' = '),                                                             #12) 1 space around ` = `
-    (r'( *= *= *| *\+ *= *| *\- *= *| *\* *= *| *= *> *| *\/ *= *| *\! *= *| *> *= *| *< *= *)', process_equal_override),         #13)
+    (r' *= *= *', process_equal_override),                                          #13a) ` == `
+    (r' *\+ *= *', process_equal_override),                                         #13b) ` += `
+    (r' *\- *= *', process_equal_override),                                         #13c) ` -= `
+    (r' *\* *= *', process_equal_override),                                         #13d) ` *= `
+    (r' *= *> *', process_equal_override),                                          #13e) ` => `
+    (r' *\/ *= *', process_equal_override),                                         #13f) ` /= `
+    (r' *\! *= *', process_equal_override),                                         #13g) ` != `
+    (r' *> *= *', process_equal_override),                                          #13h) ` >= `
+    (r' *< *= *', process_equal_override),                                          #13i) ` <= `
     #(r' +\+ +', r' + '),                                                           #14) ?
     #(r' +\- +', r' - '),                                                           #15) ?
     (r' *\+\+ *', r'++'),                                                           #16) no space around `++`
     (r' *\-\- *', r'--'),                                                           #17) no space around `--`
     # (r' +\* +', r' * '),                                                          #18) ? -- this is conflicting with `/**`
-    # (r'\/\/ *', r'// '),                                                          #19) ?
+    # (r'\/\/ *', r'// '),                                                          #19) 1 space after `// ` comments
     (r' *\=\> *', r' => '),                                                         #20) 1 space around ` => `
     (r' *\=\= *', r' == '),                                                         #21) 1 space around ` == `
     (r' *\+\= *', r' += '),                                                         #22) 1 space around ` += `
@@ -151,17 +153,15 @@ regex_dict = OrderedDict([
     (r'(.+) class (.+) *{', class_name),                                            #30) 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #31) remove `== true` or `!= false`
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #32) convert `x == false` to `!x`
-    (r'\s*\=\=\s*true', process_true),                                              #33) remove `== true`
-    (r'\s*\!\=\s*false', process_true),                                             #34) remove `!= false`
-    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop),                          #35) 1 newline between multiline forloop and `{`
-    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),                                    #36) no newline between `for (..) {`
-    (r'(?i)\bSELECT\b *' , r'select '),                                             #37) lowercase soql keyword `select`
-    (r'(?i)\bFROM\b *' , r'from '),                                                 #38) lowercase soql keyword `from`
-    (r'(?i)\bWHERE\b *' , r'where '),                                               #39) lowercase soql keyword `where`
-    (r'(?i)\bLIMIT\b *' , r'limit '),                                               #40) lowercase soql keyword `limit`
-    (r'(?i)\bGROUP BY\b *' , r'group by'),                                          #41) lowercase soql keyword `group by`
-    (r'(?i)\bORDER BY\b *' , r'order by'),                                          #42) lowercase soql keyword `order by`
-    (r'(?i)\bHAVING\b *' , r'having'),                                              #43) lowercase soql keyword `having`
+    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop),                          #33) 1 newline between multiline forloop and `{`
+    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),                                    #34) no newline between `for (..) {`
+    (r'(?i)\bSELECT\b *' , r'select '),                                             #35) lowercase soql keyword `select`
+    (r'(?i)\bFROM\b *' , r'from '),                                                 #36) lowercase soql keyword `from`
+    (r'(?i)\bWHERE\b *' , r'where '),                                               #37) lowercase soql keyword `where`
+    (r'(?i)\bLIMIT\b *' , r'limit '),                                               #38) lowercase soql keyword `limit`
+    (r'(?i)\bGROUP BY\b *' , r'group by'),                                          #40) lowercase soql keyword `group by`
+    (r'(?i)\bORDER BY\b *' , r'order by'),                                          #41) lowercase soql keyword `order by`
+    (r'(?i)\bHAVING\b *' , r'having'),                                              #42) lowercase soql keyword `having`
 ])
 
 class FormatmeCommand(sublime_plugin.TextCommand):
