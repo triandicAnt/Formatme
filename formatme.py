@@ -15,18 +15,6 @@ Usage : Select the text you want to format and press: CRTL + B
 PS : Please expect a little misbehavior of the code as its not trained for few unseen circumstances.
 """
 
-equal_dict = {
-    r' *= *= *' : ' == ',
-    r' *\+ *= *' : ' += ',
-    r' *- *= *' : ' -= ',
-    r' *\* *= *' : ' *= ',
-    r' *\/ *= *' : ' /= ',
-    r' *= *> *' : ' => ',
-    r' *\! *= *' : ' != ',
-    r' *> *= *' : ' >= ',
-    r' *< *= *' : ' <= ',
-}
-
 """
 Get leading spaces before statement
 """
@@ -85,16 +73,6 @@ def process_if_false(matchedobj):
      return '!' + re.compile(r'\s*==\s*').split(matchedobj.group(0))[0]
 
 """
-process equal override
-"""
-def process_equal_override(matchedobj):
-    stmt = matchedobj.group(0)
-    for k, v in equal_dict.items():
-        # stmt = stmt.replace(k, v)
-        stmt = re.sub(k, v, stmt, flags=re.MULTILINE)
-    return stmt
-
-"""
 process comma
 """
 def process_comma(matchedobj):
@@ -135,15 +113,15 @@ regex_dict = OrderedDict([
     (r'(\, *[^\'\,\'|\w|\n])', process_comma),                                      #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
     (r' *= *', r' = '),                                                             #12) 1 space around ` = `
-    (r' *= *= *', process_equal_override),                                          #13a) ` == `
-    (r' *\+ *= *', process_equal_override),                                         #13b) ` += `
-    (r' *\- *= *', process_equal_override),                                         #13c) ` -= `
-    (r' *\* *= *', process_equal_override),                                         #13d) ` *= `
-    (r' *= *> *', process_equal_override),                                          #13e) ` => `
-    (r' *\/ *= *', process_equal_override),                                         #13f) ` /= `
-    (r' *\! *= *', process_equal_override),                                         #13g) ` != `
-    (r' *> *= *', process_equal_override),                                          #13h) ` >= `
-    (r' *< *= *', process_equal_override),                                          #13i) ` <= `
+    (r' *= *= *', r' == '),                                                         #13a) ` == `
+    (r' *\+ *= *', r' += '),                                                        #13b) ` += `
+    (r' *\- *= *', r' -= '),                                                        #13c) ` -= `
+    (r' *\* *= *', r' *= '),                                                        #13d) ` *= `
+    (r' *= *> *', r' => '),                                                         #13e) ` => `
+    (r' *\/ *= *', r' /= '),                                                        #13f) ` /= `
+    (r' *\! *= *', r' != '),                                                        #13g) ` != `
+    (r' *> *= *', r' >= '),                                                         #13h) ` >= `
+    (r' *< *= *', r' <= '),                                                         #13i) ` <= `
     #(r' +\+ +', r' + '),                                                           #14) ?
     #(r' +\- +', r' - '),                                                           #15) ?
     (r' *\+\+ *', r'++'),                                                           #16) no space around `++`
