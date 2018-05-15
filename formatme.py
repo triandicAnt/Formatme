@@ -110,7 +110,7 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
     # (r'\w{', r' {'),                                                              #8)  ?
     # (r'} *', r'}'),                                                               #9)  ?
-    (r'(\, *[^\'\,\'|\w|\n|\(])', process_comma),                                      #10) 1 space after `, `
+    (r'(\, *[^\'\,\'|\w|\n|\(])', process_comma),                                   #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
     (r' *= *', r' = '),                                                             #12) 1 space around ` = `
     (r' *= *= *', r' == '),                                                         #13a) ` == `
@@ -122,6 +122,7 @@ regex_dict = OrderedDict([
     (r' *\! *= *', r' != '),                                                        #13g) ` != `
     (r' *> *= *', r' >= '),                                                         #13h) ` >= `
     (r' *< *= *', r' <= '),                                                         #13i) ` <= `
+    (r' *& *= *', r' &= '),                                                         #13j) ` &= `
     #(r' +\+ +', r' + '),                                                           #14) ?
     #(r' +\- +', r' - '),                                                           #15) ?
     (r' *\+\+ *', r'++'),                                                           #16) no space around `++`
@@ -141,7 +142,7 @@ regex_dict = OrderedDict([
     (r'(.+) class (.+) *{', class_name),                                            #30) 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #31) remove `== true` or `!= false`
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #32) convert `x == false` to `!x`
-    (r'^ *(for|if|while)[^}]+{$', process_multiline_loop),                          #33) 1 newline between multiline forloop and `{`
+    (r'^ *(for|if|while)[^{|}]+{$', process_multiline_loop),                          #33) 1 newline between multiline forloop and `{`
     (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                     #34) no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                             #35) lowercase soql keyword `select`
     (r'(?i)\bFROM\b *' , r'from '),                                                 #36) lowercase soql keyword `from`
