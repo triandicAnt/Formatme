@@ -29,7 +29,6 @@ equal_dict = {
 
 """
 Get leading spaces before statement
-
 """
 def get_leading_spaces(statement):
     leading_space_count = len(statement) - len(statement.lstrip(' '))
@@ -42,7 +41,7 @@ def get_leading_spaces(statement):
 """
 The one line for loop should have the curly bracket in the same line.
 """
-def get_loop(matchedobj):
+def process_singleline_loop(matchedobj):
     return matchedobj.group(0).split('\n')[0] + ' {'
 
 """
@@ -154,7 +153,7 @@ regex_dict = OrderedDict([
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #31) remove `== true` or `!= false`
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #32) convert `x == false` to `!x`
     (r'^ *(for|if|while)[^{]+{$', process_multiline_loop),                          #33) 1 newline between multiline forloop and `{`
-    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),                                    #34) no newline between singline forloop and `{`
+    (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                     #34) no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                             #35) lowercase soql keyword `select`
     (r'(?i)\bFROM\b *' , r'from '),                                                 #36) lowercase soql keyword `from`
     (r'(?i)\bWHERE\b *' , r'where '),                                               #37) lowercase soql keyword `where`
