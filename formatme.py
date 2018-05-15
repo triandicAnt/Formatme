@@ -9,33 +9,6 @@ from collections import OrderedDict
 process_all = True
 
 """
-Format apex code.
-
-1.  `if (`                          < => `if (`
-2.  `for (`                         < => `for (`
-3.  `while (`                       < => `while (`
-4.  `) {`                           < => ') {'
-5.  '> {'                           < => '> {'
-6.  ', +'                           < => ', ' # take care of lines ending with comma
-7.  '='                             < => ' = '
-8.  '+'                             < => ' + '
-9.  '-'                             < => ' - '
-10. '*'                             < => ' * '
-11. '\'                             < => ' \ '
-12. ' += '                          < => ' += '
-13. ' -= '                          < => ' -= '
-14. ' *= '                          < => ' *= '
-15. '\='                            < => ' \= '
-16. '\n'                            < => 2 or more \n to 2
-17. '; *'                           < => Process semicolon
-18. ' * != *'                       < => !=
-19. ' +'                            < => Trailing whitespaces
-20. 'for (..) {'                    < => single line loops should have { on same line
-21. Handle @isTest                  < => testMethod is deprecated, replace it with @isTest.
-22. Handle class name brackets      < => Add space before bracket.
-23. Process if true                 < => if (true_flag) {}
-24. Process if false                < => if (!false_flag) {}
-
 Usage : Select the text you want to format and press: CRTL + B
         Or Right click and select `Formatme->Format me`
 
@@ -79,7 +52,6 @@ def process_multiline_loop(matchedobj):
     stmt = matchedobj.group(0).strip('\n+')
     return stmt[:-1].strip('\n+').rstrip(' +').rstrip('\n+')+'\n' + get_leading_spaces(stmt) + '{'
 
-
 """
 Remove the `testMethod` keyword from the test class methods and adding the keyword `@isTest`.
 """
@@ -93,13 +65,11 @@ Handle class name brackets.
 def class_name(matchedobj):
     return matchedobj.group(1) + ' class ' + matchedobj.group(2).rstrip(' +') + ' {'
 
-
 """
 process == true {
 """
 def process_if_true(matchedobj):
     return matchedobj.group(1).rstrip(' +') + matchedobj.group(3)
-
 
 """
 process == false
@@ -125,7 +95,7 @@ def process_equal_override(matchedobj):
     return stmt
 
 """
-process equal override
+process comma
 """
 def process_comma(matchedobj):
     return matchedobj.group(1).rstrip(' +') + ' '
@@ -147,59 +117,51 @@ def single_line_if_else(matchedobj):
 
 
 regex_dict = OrderedDict([
-    (r'^\s*(if|else)[^;{]+(;)', single_line_if_else),#                                  # single line if else
-    (r'if *\(', r'if ('), #                                                         # if
-    (r'\} *else *\{', r'} else {'), #                                               # else
-    (r'\} *else *if *\(', r'} else if ('), #                                        # else if
-    (r'for *\(', r'for ('), #                                                       # for
-    (r'while *\(', r'while ('), #                                                   # while
-    (r'> *\{', r'> {'), #                                                           # > {
-    (r'\) *\{', r') {'), #                                                          # ) {
-    # (r'\w{', r' {'), #                                                            # {
-    # (r'} *', r'}'), #                                                             # }
-    (r'(\, *[^\'\,\'|\w|\n])', process_comma), #                                       #,
-    (r', *\n', r', \n'), #                                                          #, \n
-    (r' *= *', r' = '), #                                                           # =
-    (r'( *= *= *| *\+ *= *| *\- *= *| *\* *= *| *= *> *| *\/ *= *| *\! *= *| *> *= *| *< *= *)', process_equal_override),# process equal overide
-    #(r' +\+ +', r' + '), #                                                         # +
-    #(r' +\- +', r' - '), #                                                         # -
-    (r' *\+\+ *', r'++'), #                                                         #++
-    (r' *\-\- *', r'--'), #                                                         #--
-    # (r' +\* +', r' * '), #                                                        # * - this is conflicting with /**
-    # (r'\/\/ *', r'// '), #                                                        # //
-    (r' *\=\> *', r' => '), #                                                       # =>
-    (r' *\=\= *', r' == '), #                                                       # ==
-    (r' *\+\= *', r' += '), #                                                       # +=
-    (r' *\-\= *', r' -= '), #                                                       # -=
-    (r' *\*\= *', r' *= '), #                                                       # *=
-    (r' */= *', r' /= '), #                                                         # /=
-    (r'\n{2, }', r'\n\n'), #                                                        # 2 or more \n to 2
-    (r' *; *', r';'), #                                                            #;
-    (r' *!= *', r' != '), #                                                         # !=
-    (r' +$', ''), #                                                                 # remove trailing whitespaces
-    (r'(.+) testMethod (.+)', remove_test_method), #                                # handle @isTest
-    (r'(.+) class (.+) *{', class_name), #                                          # class name brackets should contain the space before.
-    (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true), #                   # process if(true_flag) {}
-    #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false), #               # process == false
-    (r'\s*\=\=\s*true', process_true), #                                            # process == true
-    (r'\s*\!\=\s*false', process_true), #                                           # process != false
-    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop), #                        # process multiline loop
-    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),#                                   # single line loops should have { on same line
-])
-
-regex_soql = OrderedDict([
-    (r'(?i)\bSELECT\b *' , r'select '),
-    (r'(?i)\bFROM\b *' , r'from '),
-    (r'(?i)\bWHERE\b *' , r'where '),
-    (r'(?i)\bLIMIT\b *' , r'limit '),
-    (r'(?i)\bGROUP\b *' , r'group '),
-    (r'(?i)\bORDER by\b *' , r'order '),
-    (r'(?i)\bHAVING\b *' , r'having'),
-    # (r'[select (\s|\w|,|(|))+ FROM ' : select_from),
-    # (r'[select (\s|\w|,|(|))+ from (\s|\w)+ WHERE ', select_where),
-    # (r'[select (\s|\w|,|(|))+ from (\s|\w|\W)+ LIMIT ', select_limit),
-    # (r'[select (\s|\w|,|(|))+ from (\s|\w|\W)+ ORDER BY ', select_order),
-    # (r'[select (\s|\w|,|(|))+ from (\s|\w|\W)+ GROUP BY ', select_group_by),
+    ###### RULE #######                                                             ###### DOCUMENTATION ######
+    (r'^\s*(if|else)[^;{]+(;)', single_line_if_else),                               #1)  single line if/else should be encased with curly braces
+    (r'if *\(', r'if ('),                                                           #2)  1 space between `if (`
+    (r'\} *else *\{', r'} else {'),                                                 #3)  1 space between `} else {`
+    (r'\} *else *if *\(', r'} else if ('),                                          #3)  1 space between `} else if (`
+    (r'for *\(', r'for ('),                                                         #4)  1 space between `for (`
+    (r'while *\(', r'while ('),                                                     #5)  1 space between `while (`
+    (r'> *\{', r'> {'),                                                             #6)  1 space between `> {`
+    (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
+    # (r'\w{', r' {'),                                                              #8)  ?
+    # (r'} *', r'}'),                                                               #9)  ?
+    (r'(\, *[^\'\,\'|\w|\n])', process_comma),                                      #10) ?
+    (r', *\n', r', \n'),                                                            #11) 1 newline after `, `
+    (r' *= *', r' = '),                                                             #12) 1 space around ` = `
+    (r'( *= *= *| *\+ *= *| *\- *= *| *\* *= *| *= *> *| *\/ *= *| *\! *= *| *> *= *| *< *= *)', process_equal_override),         #13)
+    #(r' +\+ +', r' + '),                                                           #14) ?
+    #(r' +\- +', r' - '),                                                           #15) ?
+    (r' *\+\+ *', r'++'),                                                           #16) no space around `++`
+    (r' *\-\- *', r'--'),                                                           #17) no space around `--`
+    # (r' +\* +', r' * '),                                                          #18) ? -- this is conflicting with `/**`
+    # (r'\/\/ *', r'// '),                                                          #19) ?
+    (r' *\=\> *', r' => '),                                                         #20) 1 space around ` => `
+    (r' *\=\= *', r' == '),                                                         #21) 1 space around ` == `
+    (r' *\+\= *', r' += '),                                                         #22) 1 space around ` += `
+    (r' *\-\= *', r' -= '),                                                         #23) 1 space around ` -= `
+    (r' *\*\= *', r' *= '),                                                         #24) 1 space around ` *= `
+    (r' */= *', r' /= '),                                                           #25) 1 space around ` /= `
+    (r'\n{2, }', r'\n\n'),                                                          #26) at most 2 newlines
+    (r' *; *', r';'),                                                               #27) no spaces around `;`
+    (r' +$', ''),                                                                   #28) no trailing whitespaces
+    (r'(.+) testMethod (.+)', remove_test_method),                                  #29) replace `testMethod` with `@isTest`
+    (r'(.+) class (.+) *{', class_name),                                            #30) 1 space between `SampleClass {`
+    (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #31) remove `== true` or `!= false`
+    #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #32) convert `x == false` to `!x`
+    (r'\s*\=\=\s*true', process_true),                                              #33) remove `== true`
+    (r'\s*\!\=\s*false', process_true),                                             #34) remove `!= false`
+    (r'^ *(for|if|while)[^{]+{$', process_multiline_loop),                          #35) 1 newline between multiline forloop and `{`
+    (r'(for|if|while) *\(.+\)\n+ *{', get_loop),                                    #36) no newline between `for (..) {`
+    (r'(?i)\bSELECT\b *' , r'select '),                                             #37) lowercase soql keyword `select`
+    (r'(?i)\bFROM\b *' , r'from '),                                                 #38) lowercase soql keyword `from`
+    (r'(?i)\bWHERE\b *' , r'where '),                                               #39) lowercase soql keyword `where`
+    (r'(?i)\bLIMIT\b *' , r'limit '),                                               #40) lowercase soql keyword `limit`
+    (r'(?i)\bGROUP BY\b *' , r'group by'),                                          #41) lowercase soql keyword `group by`
+    (r'(?i)\bORDER BY\b *' , r'order by'),                                          #42) lowercase soql keyword `order by`
+    (r'(?i)\bHAVING\b *' , r'having'),                                              #43) lowercase soql keyword `having`
 ])
 
 class FormatmeCommand(sublime_plugin.TextCommand):
@@ -216,23 +178,23 @@ class FormatmeCommand(sublime_plugin.TextCommand):
 
 def process_whole_file(self, edit):
     # select all text
-    all_text = self.view.substr(sublime.Region(0, self.view.size()))
-    for key, value in regex_dict.items():
-        all_text = re.sub(key, value, all_text, flags=re.MULTILINE)
-    # for key, value in regex_soql.items():
-    #     all_text = re.sub(key, value, all_text, flags=re.MULTILINE)
-    self.view.replace(edit, sublime.Region(0, self.view.size()), all_text.rstrip(' +'))
+    region = sublime.Region(0, self.view.size())
+    text = self.view.substr(region)
+    formatMe(self, edit, region, text)
 
 def process_selection(self, edit):
     # get user selection
     for region in self.view.sel():
         # if selection not empty then
         if not region.empty():
-            selected_text = self.view.substr(region)
-            for key, value in regex_dict.items():
-                selected_text = re.sub(key, value, selected_text, flags=re.MULTILINE)
-            # replace content in view while removing any trailing whitespaces.
-            self.view.replace(edit, region, selected_text.rstrip(' +'))
+            text = self.view.substr(region)
+            formatMe(self, edit, region, text)
+
+def formatMe(self, edit, region, text):
+    for key, value in regex_dict.items():
+        text = re.sub(key, value, text, flags=re.MULTILINE)
+    # replace content in view while removing any trailing whitespaces.
+    self.view.replace(edit, region, text.rstrip(' +'))
 
 class RemoveDirty(sublime_plugin.EventListener):
     # "save" event hook to remove dirty window
