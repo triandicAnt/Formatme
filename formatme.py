@@ -190,7 +190,8 @@ def process_whole_file(self, edit):
     # select all text
     region = sublime.Region(0, self.view.size())
     text = self.view.substr(region)
-    formatMe(self, edit, region, text)
+    text = formatMe(self, edit, region, text)
+    text = fix_indentation(self, edit, region, text)
 
 def process_selection(self, edit):
     # get user selection
@@ -204,7 +205,34 @@ def formatMe(self, edit, region, text):
     for key, value in regex_dict.items():
         text = re.sub(key, value, text, flags=re.MULTILINE)
     # replace content in view while removing any trailing whitespaces.
-    self.view.replace(edit, region, text.rstrip(' +'))
+    text = text.rstrip(' +');
+    self.view.replace(edit, region, text)
+    return text
+
+def fix_indentation(self, edit, region, text):
+    lines = text.split('\n')
+    tabs = 0
+    newtext = ''
+    for line in lines:
+        line = line.strip()
+        if len(line) == 0:
+            newtext += '\n'
+            continue
+        is_comment = is_line_comment(line)
+        if line.startswith('}') and not is_comment:
+            tabs -= 1
+        newline = ' ' * (tabs * 4)
+        newline += line
+        if line.endswith('{') and not is_comment:
+            tabs += 1
+        newtext += newline + '\n'
+    newtext = newtext[:-1] # remove the last '\n'
+    self.view.replace(edit, region, newtext)
+
+def is_line_comment(line):
+    if line.startswith('//') or line.startswith('/*') or line.startswith('*') or line.endswith('*/'):
+        return True
+    return False
 
 class RemoveDirty(sublime_plugin.EventListener):
     # "save" event hook to remove dirty window
