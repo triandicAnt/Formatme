@@ -186,25 +186,25 @@ class FormatmeCommand(sublime_plugin.TextCommand):
         else:
             process_selection(self, edit) # format only the selected text
 
-    def process_whole_file(self, edit):
-        # select all text
-        region = sublime.Region(0, self.view.size())
-        text = self.view.substr(region)
-        formatMe(self, edit, region, text)
+def process_whole_file(self, edit):
+    # select all text
+    region = sublime.Region(0, self.view.size())
+    text = self.view.substr(region)
+    formatMe(self, edit, region, text)
 
-    def process_selection(self, edit):
-        # get user selection
-        for region in self.view.sel():
-            # if selection not empty then
-            if not region.empty():
-                text = self.view.substr(region)
-                formatMe(self, edit, region, text)
+def process_selection(self, edit):
+    # get user selection
+    for region in self.view.sel():
+        # if selection not empty then
+        if not region.empty():
+            text = self.view.substr(region)
+            formatMe(self, edit, region, text)
 
-    def formatMe(self, edit, region, text):
-        for key, value in regex_dict.items():
-            text = re.sub(key, value, text, flags=re.MULTILINE)
-        # replace content in view while removing any trailing whitespaces.
-        self.view.replace(edit, region, text.rstrip(' +'))
+def formatMe(self, edit, region, text):
+    for key, value in regex_dict.items():
+        text = re.sub(key, value, text, flags=re.MULTILINE)
+    # replace content in view while removing any trailing whitespaces.
+    self.view.replace(edit, region, text.rstrip(' +'))
 
 class RemoveDirty(sublime_plugin.EventListener):
     # "save" event hook to remove dirty window
