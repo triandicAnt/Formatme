@@ -46,7 +46,7 @@ Remove `private` from test method definition
 def remove_test_method(matchedobj):
     str = '\t@isTest\n'
     m1 = matchedobj.group(1)
-    if 'private' in m1:
+    if 'private ' in m1:
         x = m1.split('private ')
         str += x[0] + x[1]
     else:
@@ -136,7 +136,7 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
     # (r'\w{', r' {'),                                                              #8)  ?
     # (r'} *', r'}'),                                                               #9)  ?
-    (r'(\, *[^\'\,\'|\w|\n|\(])', process_comma),                                   #10) 1 space after `, `
+    (r'(\, *[^\'\,\'|\w|\n|\(|<])', process_comma),                                 #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),                     #12) 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                 #13a) ` == `

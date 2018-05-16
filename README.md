@@ -32,7 +32,6 @@ The formatting handles the following scenarios:
 - `; `                                            =>      `;`
 - `bool == true` or `bool != false`               =>      `bool`
 - `bool == false`                                 =>      `!bool`
-- `for(..)                                        =>      single line loops should have { on same line
 - `testMethod`                                    =>      `@isTest`
 - `SampleClassName{`                              =>      `SampleClassName {`
 - `[SELECT ... FROM ... WHERE]`                   =>      `[select ... from ... where]` lowercase SOQL keywords
