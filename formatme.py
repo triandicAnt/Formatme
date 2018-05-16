@@ -219,11 +219,11 @@ def fix_indentation(self, edit, region, text):
             newtext += '\n'
             continue
         is_comment = is_line_comment(line)
-        if line.startswith('}') and not is_comment:
+        if (line.startswith('}') or line.startswith(')')) and not is_comment:
             tabs -= 1
         newline = ' ' * (tabs * 4)
         newline += line
-        if line.endswith('{') and not is_comment:
+        if (line.endswith('{') or line.endswith('(')) and not is_comment:
             tabs += 1
         newtext += newline + '\n'
     newtext = newtext[:-1] # remove the last '\n'
