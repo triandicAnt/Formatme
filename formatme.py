@@ -155,10 +155,10 @@ regex_dict = OrderedDict([
     (r' *\+\+ *', r'++'),                                                           #16) no space around `++`
     (r' *\-\- *', r'--'),                                                           #17) no space around `--`
     # (r'\/\/ *', r'// '),                                                          #19) 1 space after `// ` comments
-    (r'\n{2, }', r'\n\n'),                                                          #20) at most 2 newlines
+    (r'\n{2,}', r'\n\n'),                                                           #20) at most 2 newlines
     (r' *; *\n', r';\n'),                                                           #21) no spaces around `;`
     (r' +$', ''),                                                                   #22) no trailing whitespaces
-    (r'(.+) testMethod (.+)', remove_test_method),                                  #23) replace `testMethod` with `@isTest`
+    (r'(.+) (?i)testMethod (.+)', remove_test_method),                              #23) replace `testMethod` with `@isTest`
     (r'(.+) class (.+) *{', class_name),                                            #24) 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #25) remove `== true` or `!= false`
     #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #26) convert `x == false` to `!x`
@@ -230,9 +230,7 @@ def fix_indentation(self, edit, region, text):
     self.view.replace(edit, region, newtext)
 
 def is_line_comment(line):
-    if line.startswith('//') or line.startswith('/*') or line.startswith('*') or line.endswith('*/'):
-        return True
-    return False
+    return line.startswith('//') or line.startswith('/*') or line.startswith('*') or line.endswith('*/')
 
 class RemoveDirty(sublime_plugin.EventListener):
     # "save" event hook to remove dirty window
