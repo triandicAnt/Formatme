@@ -74,7 +74,7 @@ The formatting handles the following scenarios:
 `cd /Users/YOUR_USERNAME/Library/Application\ Support/Sublime\ Text\ 3/Packages/`
 2. Run `python test.py`
 ```python
-C02T64H1H03M:Formatme sudhansu$ python test.py
+*******:Formatme sudhansu$ python test.py
 ..
 ----------------------------------------------------------------------
 Ran 2 tests in 0.006s
