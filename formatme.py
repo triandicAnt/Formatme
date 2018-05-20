@@ -4,8 +4,8 @@ import sublime
 import sublime_plugin
 import re
 from collections import OrderedDict
-import Formatme.indentme as indent # import with module name
 from Formatme.regexme import regex_dict
+from Formatme.indentme import indent_me
 
 # do you want to format the whole file or only a selection?
 process_all = True
@@ -16,7 +16,6 @@ Usage : Select the text you want to format and press: CRTL + B
 
 PS : Please expect a little misbehavior of the code as its not trained for few unseen circumstances.
 """
-
 
 class FormatmeCommand(sublime_plugin.TextCommand):
 
@@ -39,7 +38,7 @@ def process_whole_file(self, edit):
     region = sublime.Region(0, self.view.size())
     text = self.view.substr(region)
     text = format_me(self, edit, region, text)
-    # text = fix_indentation(self, edit, region, text)
+    # text = indent_me(self, edit, region, text)
 
 def process_selection(self, edit):
     """
@@ -62,29 +61,6 @@ def format_me(self, edit, region, text):
     text = text.rstrip(' +');
     self.view.replace(edit, region, text)
     return text
-
-def fix_indentation(self, edit, region, text):
-    lines = text.split('\n')
-    tabs = 0
-    newtext = ''
-    for line in lines:
-        line = line.strip()
-        if len(line) == 0:
-            newtext += '\n'
-            continue
-        is_comment = is_line_comment(line)
-        if (line.startswith('}') or line.startswith(')')) and not is_comment:
-            tabs -= 1
-        newline = ' ' * (tabs * 4)
-        newline += line
-        if (line.endswith('{') or line.endswith('(')) and not is_comment:
-            tabs += 1
-        newtext += newline + '\n'
-    newtext = newtext[:-1] # remove the last '\n'
-    self.view.replace(edit, region, newtext)
-
-def is_line_comment(line):
-    return line.startswith('//') or line.startswith('/*') or line.startswith('*') or line.endswith('*/')
 
 """
 This class removes the dirty flag from the processed tab
