@@ -165,4 +165,5 @@ regex_dict = OrderedDict([
     (r'(?i)\bORDER BY\b *' , r'order by '),                                         #34) lowercase soql keyword `order by`
     (r'(?i)\bHAVING\b *' , r'having '),                                             #35) lowercase soql keyword `having`
     (r'\n{2}\s*}', remove_trailing_newline),                                        #36) remove trailing newline at end of functions
+    (r'({\s*get;\s*set;\s*})','{get; set;}'),                                       #37) get/set for class variables
 ])
