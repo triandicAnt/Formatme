@@ -66,6 +66,20 @@ def process_if_false(matchedobj):
     return '!{0}'.format(stmt)
 
 """
+if () {
+
+}
+else{
+
+}
+"""
+def format_if_else_same_line(matchedobj):
+    stmts = re.compile(r'\n*').split(matchedobj.group(0))
+    if not stmts:
+        return matchedobj.group(0)
+    return '{0} {1}'.format(stmts[0],stmts[1].strip())
+
+"""
 process comma
 """
 def process_comma(matchedobj):
@@ -166,4 +180,5 @@ regex_dict = OrderedDict([
     (r'(?i)\bHAVING\b *' , r'having '),                                             #35) lowercase soql keyword `having`
     (r'\n{2}\s*}', remove_trailing_newline),                                        #36) remove trailing newline at end of functions
     (r'({\s*get;\s*set;\s*})','{get; set;}'),                                       #37) get/set for class variables
+    (r'}\n+\s*else', format_if_else_same_line),                                     #38) else/else if should start with closing } of if
 ])
