@@ -19,16 +19,28 @@ class TestFormatMe(unittest.TestCase):
         """
         #1)  single line if/else should be enclosed with curly braces
         """
-        input_string = '''
-                        if (i am hungry)
-                            Syso(i watch netflix);
-                        '''
-        expected_string = '''
-                        if (i am hungry) {
-                            Syso(i watch netflix);
-                        }
-                        '''
-        self.assertNotEqual(format_me(self, input_string), expected_string)
+        input_string = '''if (i am hungry)
+    Syso(i watch netflix);'''
+        expected_string = '''if (i am hungry) {
+    Syso(i watch netflix);
+}'''
+        self.assertEqual(format_me(self, input_string), expected_string)
+
+    def test_if_false(self):
+        #26) convert `x == false|z != true ` to `!x`
+        test_data_dict = {
+        '''if (flag == false) { // bad''' : '''if (!flag) { // bad''',
+        '''if (flag != true) {  // bad''' : '''if (!flag) {  // bad''',
+        '''if (list.isEmpty() == false) {
+                 // sth
+            }'''                          : '''if (!list.isEmpty()) {
+                 // sth
+            }''',
+        '''if (x == false && list.isEmpty() != true) {''' : '''if (!x && !list.isEmpty()) {''',
+        '''if (flag != true) {  // bad''' : '''if (!flag) {  // bad''',
+        }
+        for key, value in test_data_dict.items():
+            self.assertEqual(format_me(self, key), value)
 
 
 if __name__ == '__main__':

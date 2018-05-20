@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from collections import OrderedDict
 
 """
@@ -57,7 +58,12 @@ def process_if_true(matchedobj):
 process == false
 """
 def process_if_false(matchedobj):
-     return '!' + re.compile(r'\s*==\s*').split(matchedobj.group(0))[0]
+    stmt = re.compile(r'\s*==\s*|\s*\!=\s*').split(matchedobj.group(0))[0].strip()
+    if not stmt:
+        return matchedobj.group(0)
+    if stmt[0] == '(':
+        return '(!{0}'.format(stmt[1:])
+    return '!{0}'.format(stmt)
 
 """
 process comma
@@ -148,7 +154,7 @@ regex_dict = OrderedDict([
     (r'(.+) (?i)testMethod (.+)', remove_test_method),                              #23) replace `testMethod` with `@isTest`
     (r'(.+) class (.+) *{', class_name),                                            #24) 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #25) remove `== true` or `!= false`
-    #(r'((\w|\.)+|(\((\w|,)*\)))+\s*==\s*false', process_if_false),                 #26) convert `x == false` to `!x`
+    (r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true', process_if_false),                    #26) convert `x == false|z != true ` to `!x`
     (r'^ *(for|if|while)[^{|}]+{$', process_multiline_loop),                        #27) 1 newline between multiline forloop and `{`
     (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                     #28) no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                             #29) lowercase soql keyword `select`
