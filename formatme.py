@@ -20,7 +20,6 @@ PS : Please expect a little misbehavior of the code as its not trained for few u
 class FormatmeCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
-        indent.whattheheck() # call your awesome method
         # only execute on Apex classes ending with `.cls`
         file_name = self.view.window().active_view().file_name()
         if not file_name or not file_name.endswith('.cls'):
