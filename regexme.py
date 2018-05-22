@@ -181,6 +181,6 @@ regex_dict = OrderedDict([
     (r'\n{2}\s*}', remove_trailing_newline),                                        #36) remove trailing newline at end of functions
     (r'({\s*get;\s*set;\s*})','{get; set;}'),                                       #37) get/set for class variables
     (r'}\n+\s*else', format_if_else_same_line),                                     #38) else/else if should start with closing } of if
-    (r'try *{', r'try {'),                                                          #39) 1 space between `try {`
-    (r'} *catch *(', r'} catch ('),                                                 #40) 1 space between `} catch (`
+    (r'try *\{', r'try {'),                                                          #39) 1 space between `try {`
+    (r'\} *catch *\(', r'} catch ('),                                                 #40) 1 space between `} catch (`
 ])

@@ -8,6 +8,8 @@ The formatting handles the following scenarios:
 - `}else if(`                                     =>      `else if (`
 - `for(`                                          =>      `for (`
 - `while(`                                        =>      `while (`
+- `try{`                                          =>      `try {`
+- `)catch{`                                       =>      `) catch {`
 - `){`                                            =>      `) {`
 - `>{`                                            =>      `> {`
 - `,`                                             =>      `, `
