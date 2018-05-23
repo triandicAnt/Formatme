@@ -131,8 +131,48 @@ def process_divide_equals(matchedobj):
         else:
             return ' /= '
 
+"""
+process Single line if/else statements.
+if (sth() && nothing()) return;
+
+if (sth() && nothing())
+    return;
+"""
+def if_else_same_line(matchedobj):
+    stmt = matchedobj.group(0)
+    # find the closing bracket for the if/else.
+    # First find the occurence of '('
+    if not stmt:
+        return
+    leading_spaces = ' '*(len(stmt) - len(stmt.lstrip('\n*').lstrip(' ')))
+    stmt = stmt.strip()
+    if 'if' in stmt or 'else if' in stmt:
+        parenthesis_index = stmt.strip().index('(')
+        # from parenthesis_index onwards we want to find the closing parenthesis
+        count = 1
+        index_count = 0
+        for char in stmt.strip()[parenthesis_index + 1 : ]:
+            index_count = index_count + 1
+            if char == '(':
+                count = count + 1
+            if char == ')':
+                count = count - 1
+                if count == 0:
+                    break
+        return '\n{0}{1}\n{2}{3}'.format(leading_spaces, stmt[:parenthesis_index + index_count + 1],\
+            '{0}{1}'.format(leading_spaces, ' ' * 4),stmt[parenthesis_index + index_count +1:].strip())
+    elif 'else' in stmt:
+        # handle the else case
+        stmts = stmt.split(' ')
+        return '\n{0}{1}\n{2}{3}'.format(leading_spaces, stmts[0],\
+            '{0}{1}'.format(leading_spaces, ' ' * 4),stmts[1].strip())
+    else:
+        return stmt
+
+
 regex_dict = OrderedDict([
     ###### RULE #######                                                             ###### DOCUMENTATION ######
+    (r'\s*(if|else)(.+);$', if_else_same_line),                                     #0)  single line if else statement should be in the next line.
     (r'^\s*(if|else)[^;{]+(;)', single_line_if_else),                               #1)  single line if/else should be enclosed with curly braces
     (r'if *\(', r'if ('),                                                           #2)  1 space between `if (`
     (r'\} *else *\{', r'} else {'),                                                 #3)  1 space between `} else {`
@@ -181,6 +221,6 @@ regex_dict = OrderedDict([
     (r'\n{2}\s*}', remove_trailing_newline),                                        #36) remove trailing newline at end of functions
     (r'({\s*get;\s*set;\s*})','{get; set;}'),                                       #37) get/set for class variables
     (r'}\n+\s*else', format_if_else_same_line),                                     #38) else/else if should start with closing } of if
-    (r'try *\{', r'try {'),                                                          #39) 1 space between `try {`
-    (r'\} *catch *\(', r'} catch ('),                                                 #40) 1 space between `} catch (`
+    (r'try *\{', r'try {'),                                                         #39) 1 space between `try {`
+    (r'\} *catch *\(', r'} catch ('),                                               #40) 1 space between `} catch (`
 ])
