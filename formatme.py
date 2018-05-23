@@ -5,7 +5,7 @@ import sublime_plugin
 import re
 from collections import OrderedDict
 from Formatme.regexme import regex_dict
-from Formatme.indentme import indent_me
+from Formatme.indentme import indent_me_returns
 
 # do you want to format the whole file or only a selection?
 process_all = True
@@ -37,7 +37,7 @@ def process_whole_file(self, edit):
     region = sublime.Region(0, self.view.size())
     text = self.view.substr(region)
     text = format_me(self, edit, region, text)
-    # text = indent_me(self, edit, region, text)
+    text = indent_me_returns(self, edit, region, text)
 
 def process_selection(self, edit):
     """

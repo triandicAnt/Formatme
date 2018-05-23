@@ -51,6 +51,50 @@ def count_brackets(line, bracket, openflag):
     return count > 0
 
 def is_line_comment(line):
-    return line.startswith('//') or line.startswith('/*') or line.startswith('*') or line.endswith('*/')
+    return line.startswith('/*') or line.startswith('*') or line.endswith('*/')
+
+def indent_me_returns(self, edit, region, text):
+    lines = text.split('\n')
+    tabs = 0
+    newtext = ''
+    tab_space = ' '*4
+    is_current_line_closes = False
+    indent = ''
+    for line in lines:
+        line = line.strip()
+        if len(line) == 0:
+            newtext += '\n'
+            continue
+        is_comment = is_line_comment(line)
+        if '}' in line and '{' in line and line[0] == '}' and not is_comment:
+            indent = tab_space*(tabs-1)
+        elif '}' in line and '{' in line and not is_comment:
+            indent = tab_space*tabs
+        elif '{' in line and not is_comment:
+            indent = tab_space*tabs
+            tabs += line.count('{')
+            print('{' + str(tabs))
+        elif '}' in line and not is_comment:
+            tabs -= line.count('}')
+            indent = tab_space*tabs
+            print('}' + str(tabs))
+        elif '}' not in line and '{' not in line and not is_comment:
+            indent = tab_space*tabs
+        open_parenthesis,close_parenthesis = is_parenthesis(line)
+        if open_parenthesis > close_parenthesis:
+            tabs += 1
+        elif open_parenthesis < close_parenthesis:
+            tabs -= 1
+        newtext += indent
+        newtext += line + '\n'
+    newtext = newtext[:-1] # remove the last '\n'
+    self.view.replace(edit, region, newtext)
+
+
+
+def is_parenthesis(line):
+    open_count = line.count('(')
+    close_count = line.count(')')
+    return (open_count,close_count)
 
 

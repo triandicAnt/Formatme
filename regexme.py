@@ -210,7 +210,7 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
     # (r'\w{', r' {'),                                                              #8)  ?
     # (r'} *', r'}'),                                                               #9)  ?
-    (r'(\, *[^\'\,\'|\w|\n|\(|<])', process_comma),                                 #10) 1 space after `, `
+    # (r'(\, *[^\'\,\'|\w|\n|\(|<])', process_comma),                                 #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),                     #12) 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                 #13a) ` == `
