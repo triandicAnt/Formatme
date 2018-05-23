@@ -80,16 +80,29 @@ else if {
 
     def test_if_else_same_line_01(self):
         test_data_dict = {
-        '''        if (sth() && nothing()) return;
-        else if (is_zune_bad()) janantram_mamantram();
-        else vista_bad();''': '''         if (sth() && nothing()) {
-             return;
-         } else if (is_zune_bad()) {
-             janantram_mamantram();
-         } else {
-             vista_bad();
-         }'''
+        'if (sth) return;' : '''if (sth) {
+    return;
+}'''
         }
+        for key, value in test_data_dict.items():
+            self.assertEqual(format_me(self, key), value)
+
+    def test_process_double_and_41_42(self):
+        test_data_dict = {
+        '''if( monkey     && monkey)
+    fight;
+else if (monkey
+        && gorilla||  ape) {
+    discuss politics;
+}''': '''if ( monkey && monkey) {
+    fight;
+} else if (monkey
+        && gorilla || ape) {
+    discuss politics;
+}'''
+        }
+        for key, value in test_data_dict.items():
+            self.assertEqual(format_me(self, key), value)
 
 if __name__ == '__main__':
     unittest.main()
