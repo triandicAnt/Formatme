@@ -199,7 +199,7 @@ def process_double_or(matchedobj):
 
 regex_dict = OrderedDict([
     ###### RULE #######                                                             ###### DOCUMENTATION ######
-    # (r'\s*(if|else)(.+);$', if_else_same_line),                                     #0)  single line if else statement should be in the next line.
+    (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                      #0)  single line if else statement should be in the next line.
     (r'^\s*(if|else)[^;{]+(;)', single_line_if_else),                               #1)  single line if/else should be enclosed with curly braces
     (r'if *\(', r'if ('),                                                           #2)  1 space between `if (`
     (r'\} *else *\{', r'} else {'),                                                 #3)  1 space between `} else {`

@@ -37,7 +37,7 @@ def process_whole_file(self, edit):
     region = sublime.Region(0, self.view.size())
     text = self.view.substr(region)
     text = format_me(self, edit, region, text)
-    text = indent_me_returns(self, edit, region, text)
+    #text = indent_me_returns(self, edit, region, text)
 
 def process_selection(self, edit):
     """
