@@ -21,7 +21,15 @@ def process_singleline_loop(matchedobj):
     return matchedobj.group(0).split('\n')[0] + ' {'
 
 """
-The multiline line for loop should have the curly bracket in next line.
+Fix multiline loops that end with '){' on new line
+"""
+def pre_process_multiline_loop(matchedobj):
+    x = matchedobj.group(0).split('\n')
+    leading_spaces = get_leading_spaces(x[1])
+    return x[0] + ')\n' + leading_spaces + '{'
+
+"""
+The multiline for loop should have the curly bracket in next line.
 """
 def process_multiline_loop(matchedobj):
     stmt = matchedobj.group(0).strip('\n+')
@@ -179,7 +187,7 @@ def process_double_and(matchedobj):
         return
     # skip the records if it has a \n otherwise process it
     if '\n' in stmt:
-        return stmt
+        return stmt.split('&&')[0] + '&& '
     else:
         return ' && '
 
@@ -193,7 +201,7 @@ def process_double_or(matchedobj):
         return
     # skip the records if it has a \n otherwise process it
     if '\n' in stmt:
-        return stmt
+        return stmt.split('||')[0] + '|| '
     else:
         return ' || '
 
@@ -208,12 +216,12 @@ regex_dict = OrderedDict([
     (r'while *\(', r'while ('),                                                     #5)  1 space between `while (`
     (r'> *\{', r'> {'),                                                             #6)  1 space between `> {`
     (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
-    # (r'\w{', r' {'),                                                              #8)  ?
-    # (r'} *', r'}'),                                                               #9)  ?
-    # (r'(\, *[^\'\,\'|\w|\n|\(|<])', process_comma),                                 #10) 1 space after `, `
+    (r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                              #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),                     #12) 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                 #13a) ` == `
+    # (r' *\+ *', r' + '),                                                          #14) `+`    # broken example: '10+'
+    # (r' *\- *', r' - '),                                                          #15) `-`    # broken example: 'Pre-Sale'
     (r' *\+ *= *', r' += '),                                                        #13b) ` += `
     (r' *\- *= *', r' -= '),                                                        #13c) ` -= `
     (r' *\* *= *', r' *= '),                                                        #13d) ` *= `
@@ -224,11 +232,8 @@ regex_dict = OrderedDict([
     (r' *< *= *', r' <= '),                                                         #13i) ` <= `
     (r' *& *= *', r' &= '),                                                         #13j) ` &= `
     (r' *\| *= *', ' |= '),                                                         #13k) ` |= `
-    #(r' +\+ +', r' + '),                                                           #14) `+`
-    #(r' +\- +', r' - '),                                                           #15) `-`
     (r' *\+\+ *', r'++'),                                                           #16) no space around `++`
     (r' *\-\- *', r'--'),                                                           #17) no space around `--`
-    # (r'\/\/ *', r'// '),                                                          #19) 1 space after `// ` comments
     (r'\n{2,}', r'\n\n'),                                                           #20) at most 2 newlines
     (r' *; *\n', r';\n'),                                                           #21) no spaces around `;`
     (r' +$', ''),                                                                   #22) no trailing whitespaces
@@ -236,7 +241,8 @@ regex_dict = OrderedDict([
     (r'(.+) class (.+) *{', class_name),                                            #24) 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #25) remove `== true` or `!= false`
     (r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true', process_if_false),                    #26) convert `x == false|z != true ` to `!x`
-    (r'^ *(for|if|while)[^{|}]+{$', process_multiline_loop),                        #27) 1 newline between multiline forloop and `{`
+    (r'(.+)\n *\) *\{$', pre_process_multiline_loop),                               #27a)Fix multiline loops that end with '){' on new line
+    (r'^ *(for|if|while)[^{|}]+{$', process_multiline_loop),                        #27b)1 newline between multiline forloop and `{`
     (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                     #28) no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                             #29) lowercase soql keyword `select`
     (r'(?i)\bFROM\b *' , r'from '),                                                 #30) lowercase soql keyword `from`
