@@ -183,8 +183,6 @@ SKIP|FAIL
 """
 def process_double_and(matchedobj):
     stmt = matchedobj.group(0)
-    if not stmt:
-        return
     # skip the records if it has a \n otherwise process it
     if '\n' in stmt:
         return stmt.split('&&')[0] + '&& '
@@ -197,8 +195,6 @@ SKIP|FAIL
 """
 def process_double_or(matchedobj):
     stmt = matchedobj.group(0)
-    if not stmt:
-        return
     # skip the records if it has a \n otherwise process it
     if '\n' in stmt:
         return stmt.split('||')[0] + '|| '
@@ -256,6 +252,6 @@ regex_dict = OrderedDict([
     (r'}\n+\s*else', format_if_else_same_line),                                     #38) else/else if should start with closing } of if
     (r'try *\{', r'try {'),                                                         #39) 1 space between `try {`
     (r'\} *catch *\(', r'} catch ('),                                               #40) 1 space between `} catch (`
-    (r'\n\s*&&\s*|\s*&&\s* ', process_double_and),                                  #41) && should have 1 space before and after.
-    (r'\n\s*\|\|\s*|\s*\|\|\s* ', process_double_or),                               #42) || should have 1 space before and after.
+    (r'(\n *&& *| *&& *)', process_double_and),                                  #41) && should have 1 space before and after.
+    (r'\n *\|\| *| *\|\| *', process_double_or),                               #42) || should have 1 space before and after.
 ])

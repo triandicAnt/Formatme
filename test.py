@@ -27,14 +27,11 @@ class CodeBlockTest:
     def evaluate(self, unittest):
         unittest.assertEquals(format_me(self.__original_code_block), self.__expected_code_block)
 
-    def reset(self):
-        self.__original_code_block = ""
-        self.__expected_code_block = ""
-
 class TestFormatMe(unittest.TestCase):
 
     def test_simple(self):
         self.assertNotEqual('java', 'apex')
+        self.assertEquals('sfdc', 'sfdc')
 
     def test_single_line_if_else_1(self):
         cb = CodeBlockTest()
@@ -75,20 +72,20 @@ class TestFormatMe(unittest.TestCase):
     '''
 
     def test_if_false_26(self):
-        #26) convert `x == false|z != true ` to `!x`
-        test_data_dict = {
-        '''if (flag == false) { // bad''' : '''if (!flag) { // bad''',
-        '''if (flag != true) {  // bad''' : '''if (!flag) {  // bad''',
-        '''if (list.isEmpty() == false) {
-                 // sth
-            }'''                          : '''if (!list.isEmpty()) {
-                 // sth
-            }''',
-        '''if (x == false && list.isEmpty() != true) {''' : '''if (!x && !list.isEmpty()) {''',
-        '''if (flag != true) {  // bad''' : '''if (!flag) {  // bad''',
-        }
-        for key, value in test_data_dict.items():
-            self.assertEqual(format_me(key), value)
+        cb = CodeBlockTest()
+        # `flag == false` ==> `!flag`
+        cb.build_original_code_block('if (flag == false) {')
+        cb.build_expected_code_block('if (!flag) {')
+        # `flag != true` ==> `!flag`
+        cb.build_original_code_block('if (flag != true) {')
+        cb.build_expected_code_block('if (!flag) {')
+        # `list.isEmpty() == false` ==> `!list.isEmpty()`
+        cb.build_original_code_block('if (list.isEmpty() == false {')
+        cb.build_expected_code_block('if (!list.isEmpty() {')
+        #  test multiple statements in 1 line
+        cb.build_original_code_block('if (x == false && list.isEmpty() != true) {')
+        cb.build_expected_code_block('if (!x && !list.isEmpty()) {')
+        cb.evaluate(self)
 
     '''
     def test_rule27(self):
@@ -105,66 +102,70 @@ class TestFormatMe(unittest.TestCase):
     '''
 
     def test_if_else_same_line_38(self):
-        test_data_dict = {
-                    '''if (i am hungry)
-    I will sleep;
-else if
-    I will run;''' : '''if (i am hungry) {
-    I will sleep;
-} else if {
-    I will run;
-}''',
-
-'''                    if (sth) {
-                        hello from the other side;
-                    }
-                    else {
-                        earth says goodbye!;
-                    }''' : '''                    if (sth) {
-                        hello from the other side;
-                    } else {
-                        earth says goodbye!;
-                    }''',
-
-'''if (sth) {
-    hello from the other side;
-}
-else if {
-    earth says goodbye!;
-}''' : '''if (sth) {
-    hello from the other side;
-} else if {
-    earth says goodbye!;
-}''',
-        }
-        for key, value in test_data_dict.items():
-            self.assertEqual(format_me(key), value)
+        cb = CodeBlockTest()
+        # test that if statements with no brackets get surrounded with curly brackets
+        cb.build_original_code_block('if (i am hungry)')
+        cb.build_original_code_block('    I will sleep;')
+        cb.build_original_code_block('else')
+        cb.build_original_code_block('    I will run;')
+        cb.build_expected_code_block('if (i am hungry) {')
+        cb.build_expected_code_block('    I will sleep;')
+        cb.build_expected_code_block('} else {')
+        cb.build_expected_code_block('    I will run;')
+        cb.build_expected_code_block('}')
+        # test that `else` gets moved to the line of the previous close curly bracket
+        cb.build_original_code_block('if (sth) {')
+        cb.build_original_code_block('    hello from the other side;')
+        cb.build_original_code_block('}')
+        cb.build_original_code_block('else {')
+        cb.build_original_code_block('    earth says goodbye!;')
+        cb.build_original_code_block('}')
+        cb.build_expected_code_block('if (sth) {')
+        cb.build_expected_code_block('    hello from the other side;')
+        cb.build_expected_code_block('} else {')
+        cb.build_expected_code_block('    earth says goodbye!;')
+        cb.build_expected_code_block('}')
+        # test that `else if` gets moved to the line of the previous close curly bracket
+        cb.build_original_code_block('if (sth) {')
+        cb.build_original_code_block('    hello from the other side;')
+        cb.build_original_code_block('}')
+        cb.build_original_code_block('else if (sth else) {')
+        cb.build_original_code_block('    earth says goodbye!;')
+        cb.build_original_code_block('}')
+        cb.build_expected_code_block('if (sth) {')
+        cb.build_expected_code_block('    hello from the other side;')
+        cb.build_expected_code_block('} else if (sth else) {')
+        cb.build_expected_code_block('    earth says goodbye!;')
+        cb.build_expected_code_block('}')
+        cb.evaluate(self)
 
     def test_if_else_same_line_01(self):
-        test_data_dict = {
-        'if (sth) return;' : '''if (sth) {
-    return;
-}'''
-        }
-        for key, value in test_data_dict.items():
-            self.assertEqual(format_me(key), value)
+        cb = CodeBlockTest()
+        #
+        cb.build_original_code_block('if (sth) return;')
+        cb.build_expected_code_block('if (sth) {')
+        cb.build_expected_code_block('    return;')
+        cb.build_expected_code_block('}')
+        cb.evaluate(self)
 
     def test_process_double_and_41_42(self):
-        test_data_dict = {
-        '''if( monkey     && monkey)
-    fight;
-else if (monkey
-        && gorilla||  ape) {
-    discuss politics;
-}''': '''if ( monkey && monkey) {
-    fight;
-} else if (monkey
-        && gorilla || ape) {
-    discuss politics;
-}'''
-        }
-        for key, value in test_data_dict.items():
-            self.assertEqual(format_me(key), value)
+        cb = CodeBlockTest()
+        # single space around `&&`
+        cb.build_original_code_block('a    &&b;')
+        cb.build_expected_code_block('a && b;')
+        # single space around `||`
+        cb.build_original_code_block('x    ||y;')
+        cb.build_expected_code_block('x || y;')
+        # single space around `&&` and `||` in a multiline statement
+        cb.build_original_code_block('if (sth')
+        cb.build_original_code_block('    &&  A')
+        cb.build_original_code_block('    ||B)')
+        cb.build_original_code_block('{')
+        cb.build_expected_code_block('if (sth')
+        cb.build_expected_code_block('    && A')
+        cb.build_expected_code_block('    || B)')
+        cb.build_expected_code_block('{')
+        cb.evaluate(self)
 
 if __name__ == '__main__':
     unittest.main()

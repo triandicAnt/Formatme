@@ -75,12 +75,5 @@ The formatting handles the following scenarios:
 1. Navigate to the Plugin folder:
 `cd /Users/YOUR_USERNAME/Library/Application\ Support/Sublime\ Text\ 3/Packages/`
 2. Run `python test.py`
-```python
-*******:Formatme sudhansu$ python test.py
-..
-----------------------------------------------------------------------
-Ran 2 tests in 0.006s
 
-OK
-```
 Please report bugs in the `Issue` section and any improvements are welcomed using `Pull Request`.
