@@ -3,43 +3,47 @@
 import re
 from collections import OrderedDict
 
-"""
-Get leading spaces before statement
-"""
+def run(text):
+    for key, value in regex_dict.items():
+        text = re.sub(key, value, text, flags=re.MULTILINE)
+    # replace content in view while removing any trailing whitespaces.
+    text = text.rstrip(' +');
+    return text
+
+############ HELPER METHODS ############
 def get_leading_spaces(statement):
+    """Get the number of leading spaces in a line"""
     leading_space_count = len(statement) - len(statement.lstrip(' '))
     leading_space = ''
-    while(leading_space_count > 0):
+    while leading_space_count > 0:
         leading_space += ' '
         leading_space_count -= 1
     return leading_space
 
-"""
-The one line for loop should have the curly bracket in the same line.
-"""
+def is_line_a_comment(line):
+    """Check if a line is a comment"""
+    l = line.strip()
+    return l.startswith('//') or l.startswith('/*') or l.endswith('*/') or l.startswith('*')
+
+
+############ REGEX FORMATTING METHODS ############
 def process_singleline_loop(matchedobj):
+    """Single line loops should have `{` on the same line"""
     return matchedobj.group(0).split('\n')[0] + ' {'
 
-"""
-Fix multiline loops that end with '){' on new line
-"""
 def pre_process_multiline_loop(matchedobj):
+    """Multi line loops should end with `)` and have `{` on a new line"""
     x = matchedobj.group(0).split('\n')
     leading_spaces = get_leading_spaces(x[1])
     return x[0] + ')\n' + leading_spaces + '{'
 
-"""
-The multiline for loop should have the curly bracket in next line.
-"""
 def process_multiline_loop(matchedobj):
+    """Multi line loops should have `{` on a separate new line"""
     stmt = matchedobj.group(0).strip('\n+')
     return stmt[:-1].strip('\n+').rstrip(' +').rstrip('\n+')+'\n' + get_leading_spaces(stmt) + '{'
 
-"""
-Remove the `testMethod` keyword from the test class methods and adding the keyword `@isTest`.
-Remove `private` from test method definition
-"""
 def remove_test_method(matchedobj):
+    """Replace `private testMethod` keyword with `@isTest` annotation"""
     str = '\t@isTest\n'
     m1 = matchedobj.group(1)
     if 'private ' in m1:
@@ -50,10 +54,8 @@ def remove_test_method(matchedobj):
     str += ' ' + matchedobj.group(2)
     return str
 
-"""
-Handle class name brackets.
-"""
 def class_name(matchedobj):
+    """1 space between class declaration and `{`"""
     return matchedobj.group(1) + ' class ' + matchedobj.group(2).rstrip(' +') + ' {'
 
 """
@@ -252,6 +254,6 @@ regex_dict = OrderedDict([
     (r'}\n+\s*else', format_if_else_same_line),                                     #38) else/else if should start with closing } of if
     (r'try *\{', r'try {'),                                                         #39) 1 space between `try {`
     (r'\} *catch *\(', r'} catch ('),                                               #40) 1 space between `} catch (`
-    (r'(\n *&& *| *&& *)', process_double_and),                                  #41) && should have 1 space before and after.
-    (r'\n *\|\| *| *\|\| *', process_double_or),                               #42) || should have 1 space before and after.
+    (r'(\n *&& *| *&& *)', process_double_and),                                     #41) && should have 1 space before and after.
+    (r'\n *\|\| *| *\|\| *', process_double_or),                                    #42) || should have 1 space before and after.
 ])

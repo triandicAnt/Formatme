@@ -70,6 +70,12 @@ The formatting handles the following scenarios:
     }
 ```
 
+## Usage
+Select the text you want to format and press: CRTL + B
+Or Right click and select `Formatme->Format me`
+
+PS : Please expect a little misbehavior of the code as its not trained for few unseen circumstances.
+
 ## Test
 
 1. Navigate to the Plugin folder:

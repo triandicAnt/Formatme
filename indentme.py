@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-def indent_me_returns(self, edit, region, text):
+def run(text):
     lines = text.split('\n')
     tabs = 0
     newtext = ''
@@ -24,7 +24,7 @@ def indent_me_returns(self, edit, region, text):
         elif '}' in line and not is_comment:
             tabs -= line.count('}')
             indent = tab_space*tabs
-        elif diff ==0 :
+        elif diff == 0:
             indent = tab_space*tabs
         open_parenthesis,close_parenthesis = is_parenthesis(line)
         # check for the open and close parenthesis
@@ -46,9 +46,9 @@ def indent_me_returns(self, edit, region, text):
             # next lines indent would be indent + diff
             diff = square_bracket_index - len(indent)
             indent += (' ' * diff) #+ tab_space
-        if ('])' in newline or '];' in newline ) and not is_comment:
+        if ('])' in newline or '];' in newline) and not is_comment:
             new_len = len(indent)-diff
-            indent = ' '*new_len
+            indent = ' ' * new_len
             diff = 0
     newtext = newtext[:-1] # remove the last '\n'
     return newtext
