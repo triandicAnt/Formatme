@@ -214,7 +214,7 @@ regex_dict = OrderedDict([
     (r'while *\(', r'while ('),                                                     #5)  1 space between `while (`
     (r'> *\{', r'> {'),                                                             #6)  1 space between `> {`
     (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
-    (r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                              #10) 1 space after `, `
+    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                              #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),                     #12) 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                 #13a) ` == `

@@ -23,9 +23,12 @@ def process_whole_file(self, edit):
     # select all text
     region = sublime.Region(0, self.view.size())
     text = self.view.substr(region)
+    text_bkp = text
     text = format_me(text)
     text = indent_me(text)
-    replace_text(self, edit, region, text)
+    # Replace the text only if it has been modified
+    if text != text_bkp:
+        replace_text(self, edit, region, text)
 
 def process_selection(self, edit):
     # get user selection

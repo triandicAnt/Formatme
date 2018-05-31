@@ -9,19 +9,22 @@ def run(text):
     indent = ''
     diff = 0
     for line in lines:
+        if is_line_comment(line.strip()):
+            newtext += line + '\n'
+            continue
         line = line.strip()
         if len(line) == 0:
             newtext += '\n'
             continue
         is_comment = is_line_comment(line)
-        if '}' in line and '{' in line and line[0] == '}' and not is_comment:
+        if '}' in line and '{' in line and line[0] == '}':
             indent = tab_space*(tabs-1)
-        elif '}' in line and '{' in line and not is_comment:
+        elif '}' in line and '{' in line:
             indent = tab_space*tabs
-        elif '{' in line and not is_comment:
+        elif '{' in line:
             indent = tab_space*tabs
             tabs += line.count('{')
-        elif '}' in line and not is_comment:
+        elif '}' in line:
             tabs -= line.count('}')
             indent = tab_space*tabs
         elif diff == 0:
@@ -32,9 +35,12 @@ def run(text):
             tabs += 1
         elif open_parenthesis < close_parenthesis:
             tabs -= 1
+        # handle the fishy comma
+        if peaky_blinders_comma(line):
+            line = red_right_hand(line)
         newline = indent + line
         newtext += newline  + '\n'
-        if start_soql_query(newline) and not is_comment:
+        if start_soql_query(newline):
             # find the position on that in line
             square_bracket_index = 0
             if ': [' in newline:
@@ -46,7 +52,7 @@ def run(text):
             # next lines indent would be indent + diff
             diff = square_bracket_index - len(indent)
             indent += (' ' * diff) #+ tab_space
-        if ('])' in newline or '];' in newline) and not is_comment:
+        if ('])' in newline or '];' in newline):
             new_len = len(indent)-diff
             indent = ' ' * new_len
             diff = 0
@@ -63,3 +69,41 @@ def is_parenthesis(line):
     open_count = line.count('(')
     close_count = line.count(')')
     return (open_count,close_count)
+
+def red_right_hand(line):
+    """
+    1.Split by comma
+        If line contains split / = ',' / = ', ' skip it.
+        Divide and rule
+    """
+    if 'split' in line or "= ','" in line or "= ', '" in line or is_line_comment(line):
+        return line
+    # split line by comma and join them together with spaces
+    segments = line.split(',')
+    if len(segments) == 0:
+        return line
+    """
+    method1('param1','param2'   ,    'param3');
+    [method1('param1','param2'   ,    'param3');]
+    """
+    final_statement = elephant_stone_strip(segments[0])
+    prev_word = final_statement
+    for word in segments[1:]:
+        if fools_gold(word):
+            final_statement += ',' + elephant_stone_strip(word)
+        else:
+            final_statement += ', ' + elephant_stone_strip(word)
+        prev_word = word
+    return final_statement
+
+def peaky_blinders_comma(line):
+    return ',' in line
+
+def fools_gold(word):
+    # return true if `'` is odd else false
+    return word.count("'")%2 == 1
+
+def elephant_stone_strip(word):
+    if fools_gold(word):
+        return word
+    return word.strip()
