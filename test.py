@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from regexme import *
-import re
-
-def format_me(text):
-    for key, value in regex_dict.items():
-        text = re.sub(key, value, text, flags=re.MULTILINE)
-    return text
+import regexme as rm
 
 class CodeBlockTest:
     def __init__(self):
@@ -25,7 +19,8 @@ class CodeBlockTest:
         self.__expected_code_block += str
 
     def evaluate(self, unittest):
-        unittest.assertEquals(format_me(self.__original_code_block), self.__expected_code_block)
+        formatted_text = rm.run(self.__original_code_block)
+        unittest.assertEquals(formatted_text, self.__expected_code_block)
 
 class TestFormatMe(unittest.TestCase):
 
