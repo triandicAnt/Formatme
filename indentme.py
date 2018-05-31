@@ -35,10 +35,12 @@ def run(text):
             tabs += 1
         elif open_parenthesis < close_parenthesis:
             tabs -= 1
+            if ');' == line:
+                indent = tab_space*tabs
         # handle the fishy comma
         if peaky_blinders_comma(line):
             line = red_right_hand(line)
-        newline = indent + line
+        newline = indent + line.rstrip()
         newtext += newline  + '\n'
         if start_soql_query(newline):
             # find the position on that in line
@@ -90,9 +92,10 @@ def red_right_hand(line):
     prev_word = final_statement
     for word in segments[1:]:
         if fools_gold(word):
-            final_statement += ',' + elephant_stone_strip(word)
+            final_statement += ','
         else:
-            final_statement += ', ' + elephant_stone_strip(word)
+            final_statement += ', '
+        final_statement += elephant_stone_strip(word)
         prev_word = word
     return final_statement
 
