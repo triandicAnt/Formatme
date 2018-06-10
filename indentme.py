@@ -16,9 +16,9 @@ def run(text):
     akane_no_mai_flag = False
     count = 0
     soql_rises_flag = False
-    parenthesis_count = 0
+    akane_no_mai_count = 0
     paren_ragnarok_flag = False
-    paren_rises_count = 0
+    paren_ragnarok_count = 0
     for line in lines:
         count += 1
         if is_line_comment(line.strip()):
@@ -43,8 +43,8 @@ def run(text):
         if '}' in line and not soql_flag and akane_no_mai(line):
             tabs -= line.count('}')
             indent = tab_space*tabs
-            parenthesis_count = open_parenthesis - close_parenthesis
-            tabs += parenthesis_count
+            akane_no_mai_count = open_parenthesis - close_parenthesis
+            tabs += akane_no_mai_count
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------1')
         elif 'return' in line and line[-1] != ';':
             other_flag = True
@@ -55,38 +55,40 @@ def run(text):
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------3')
             other_flag = False
         elif not soql_flag and akane_no_mai(line):
-            parenthesis_count = open_parenthesis - close_parenthesis
-            tabs += parenthesis_count
+            akane_no_mai_count = open_parenthesis - close_parenthesis
+            tabs += akane_no_mai_count
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------4')
             akane_no_mai_flag = True
         elif not soql_flag and line[-1] == ')' and akane_no_mai_flag and close_parenthesis > open_parenthesis:
-            print('paren count is ' + str(parenthesis_count))
-            print('tab count is ' + str(tabs))
             if paren_ragnarok_flag:
-                tabs -= (parenthesis_count + paren_rises_count)
+                tabs -= (akane_no_mai_count + paren_ragnarok_count)
             else:
-                tabs -= parenthesis_count
-            parenthesis_count = 0
-            paren_rises_count = 0
+                tabs -= akane_no_mai_count
+            akane_no_mai_count = 0
+            paren_ragnarok_count = 0
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------5')
             akane_no_mai_flag = False
         elif les_ecorchés(line) and akane_no_mai_flag:
-            tabs -= parenthesis_count
-            parenthesis_count = 0
+            tabs -= akane_no_mai_count
+            akane_no_mai_count = 0
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------6')
             akane_no_mai_flag = False
         elif not soql_flag and virtù_e_fortuna(line):
             tabs -= 1
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------7')
         elif not other_flag and parenthesis_ragnarok(line) > 0:
+            paren_count = parenthesis_ragnarok(line)
+            if not paren_ragnarok_flag:
+                paren_ragnarok_count = paren_count
+            else:
+                paren_ragnarok_count += paren_count
             paren_ragnarok_flag = True
-            paren_rises_count = parenthesis_ragnarok(line)
-            tabs += paren_rises_count
+            tabs += paren_count
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------8')
         elif not other_flag and paren_ragnarok_flag and parenthesis_rises(line):
             paren_ragnarok_flag = False
-            tabs -= paren_rises_count
-            paren_rises_count = 0
+            tabs -= paren_ragnarok_count
+            paren_ragnarok_count = 0
             print('line ' + str(count) + ' tabs ' + str(tabs) + ' -------9')
         elif ');' == line:
             tabs -= 1
@@ -141,7 +143,7 @@ def run(text):
             new_len = len(indent)-diff
             soql_end_indent = ' ' * new_len
     newtext = newtext[:-1] # remove the last '\n'
-    print('If I fit, I sit')
+    print('If I fits, I sits')
     return newtext
 
 def is_line_comment(line):
