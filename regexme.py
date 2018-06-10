@@ -99,6 +99,12 @@ def process_comma(matchedobj):
 process single line if else
 """
 def single_line_if_else(matchedobj):
+    """
+    SKIP|FAIL
+    skip if ; in in quotes
+    """
+    if ";'" in matchedobj.group(0):
+        return matchedobj.group(0)
     stmt = matchedobj.group(0).lstrip()
     if '\n' in stmt and '{' not in stmt:
         stmts = matchedobj.group(0).split('\n')
@@ -206,7 +212,7 @@ def process_double_or(matchedobj):
 regex_dict = OrderedDict([
     ###### RULE #######                                                             ###### DOCUMENTATION ######
     (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                      #0)  single line if else statement should be in the next line.
-    (r'^\s*(if|else)[^;{]+(;)', single_line_if_else),                               #1)  single line if/else should be enclosed with curly braces
+    (r'^\s*(if|else)[^;{]+(;\')|^\s*(if|else)[^;{]+(;)', single_line_if_else),      #1)  single line if/else should be enclosed with curly braces
     (r'if *\(', r'if ('),                                                           #2)  1 space between `if (`
     (r'\} *else *\{', r'} else {'),                                                 #3)  1 space between `} else {`
     (r'\} *else *if *\(', r'} else if ('),                                          #3)  1 space between `} else if (`
