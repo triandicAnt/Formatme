@@ -1,5 +1,6 @@
 # Formatme
-Formatting apex code.
+
+### * Code formatting:
 
 The formatting handles the following scenarios:
 ```unix
@@ -41,6 +42,8 @@ The formatting handles the following scenarios:
 - 1 newline between multiline forloop and `{`
 - no newline between singline forloop and `{`
 ```
+### * Code indentation:
+Indent apex code.
 
 ## Installation
 1. Open Terminal.
