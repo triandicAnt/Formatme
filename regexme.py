@@ -123,11 +123,13 @@ def remove_trailing_newline(matchedobj):
 
 """
 process single/double equals while ignoring comments.
-The comments generally start with `\\` or `/*`. Ignore
+The comments generally start with `\\` or `/*` or '= . Ignore
 those matches and process the rest.
 """
 def process_equals(matchedobj):
     stmt = matchedobj.group(0)
+    if "'=" in stmt:
+        return stmt
     if stmt:
         if '//' in stmt or '/*' in stmt:
             return stmt
@@ -220,9 +222,9 @@ regex_dict = OrderedDict([
     (r'while *\(', r'while ('),                                                     #5)  1 space between `while (`
     (r'> *\{', r'> {'),                                                             #6)  1 space between `> {`
     (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
-    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                              #10) 1 space after `, `
+    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                             #10) 1 space after `, `
     (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
-    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),                     #12) 1 space around ` = `
+    (r'\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),              #12) 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                 #13a) ` == `
     # (r' *\+ *', r' + '),                                                          #14) `+`    # broken example: '10+'
     # (r' *\- *', r' - '),                                                          #15) `-`    # broken example: 'Pre-Sale'
