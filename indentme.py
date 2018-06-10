@@ -97,7 +97,11 @@ def run(text):
             paren_ragnarok_flag = True
             tabs += paren_count
             abra_ca_dabra(el_lazo_death_count, tabs, 8)
-        elif not other_flag and paren_ragnarok_flag and parenthesis_rises(line):
+        elif (
+            not other_flag
+            and paren_ragnarok_flag
+            and parenthesis_rises(line)
+        ):
             paren_ragnarok_flag = False
             tabs -= paren_ragnarok_count
             paren_ragnarok_count = 0
@@ -168,8 +172,8 @@ def is_line_comment(line):
     return (
         line.startswith('/*')
         or line.startswith('*')
-        or line.endswith('*/') or
-        line.startswith('//')
+        or line.endswith('*/')
+        or line.startswith('//')
     )
 
 def start_soql_query(line):
@@ -262,4 +266,12 @@ def parenthesis_rises(line):
     return False
 
 def abra_ca_dabra(line, tabs, index):
-    print('line {} tabs {}  -------> {}'.format(str(line), str(tabs), str(index)))
+    print(
+        ('line {} tabs {}  -------> {}'
+            .format(
+                str(line),
+                str(tabs),
+                str(index),
+            )
+        )
+    )
