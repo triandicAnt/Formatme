@@ -234,7 +234,8 @@ def akane_no_mai(line):
         ('if (' in line
             or 'else if (' in line
             or 'for (' in line
-            or line[-1] == '(')
+            or line[-1] == '('
+        )
         and open_parenthesis > close_parenthesis
     ):
         return True
