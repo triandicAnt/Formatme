@@ -86,3 +86,5 @@ PS : Please expect a little misbehavior of the code as its not trained for few u
 2. Run `python test.py`
 
 Please report bugs in the `Issue` section and any improvements are welcomed using `Pull Request`.
+
+PS: 🙀🐾😹If I fits, I sits😻🐾🐈
