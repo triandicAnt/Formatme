@@ -98,7 +98,11 @@ def run(text):
             akane_no_mai_count = 0
             abra_ca_dabra(el_lazo_death_count, tabs, 6)
             akane_no_mai_flag = False
-        elif not soql_flag and virtù_e_fortuna(line):
+        elif (
+            not soql_flag
+            and not other_flag
+            and virtù_e_fortuna(line)
+        ):
             tabs -= 1
             abra_ca_dabra(el_lazo_death_count, tabs, 7)
         elif (
@@ -124,7 +128,12 @@ def run(text):
             and parenthesis_rises(line)
         ):
             paren_ragnarok_flag = False
+            curly_diff = curly_contrapasso(line)
+            if curly_diff != 0:
+                tabs += curly_diff
             tabs -= paren_ragnarok_count
+            if line == '});':
+                indent = tab_space*tabs
             paren_ragnarok_count = 0
             abra_ca_dabra(el_lazo_death_count, tabs, 9)
         elif ');' == line or ')' == line:
