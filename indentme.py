@@ -74,14 +74,25 @@ def run(text):
             and akane_no_mai_flag
             and close_parenthesis > open_parenthesis
         ):
+            open_count, close_count = is_parenthesis(line)
+            diff_count = close_count-open_count
             if paren_ragnarok_flag:
-                tabs -= (akane_no_mai_count + paren_ragnarok_count)
+                if (
+                    diff_count > 0 and
+                    diff_count < (akane_no_mai_count + paren_ragnarok_count)
+                ):
+                    tabs -= diff_count
+                else:
+                    tabs -= (akane_no_mai_count + paren_ragnarok_count)
+                paren_ragnarok_count = 0
+                paren_ragnarok_flag = False
             else:
                 tabs -= akane_no_mai_count
             akane_no_mai_count = 0
-            paren_ragnarok_count = 0
-            abra_ca_dabra(el_lazo_death_count, tabs, 5)
             akane_no_mai_flag = False
+            if line == ')':
+                indent = tab_space*tabs
+            abra_ca_dabra(el_lazo_death_count, tabs, 5)
         elif les_ecorchés(line) and akane_no_mai_flag:
             tabs -= akane_no_mai_count
             akane_no_mai_count = 0
@@ -102,6 +113,9 @@ def run(text):
             else:
                 paren_ragnarok_count += paren_count
             paren_ragnarok_flag = True
+            curly_diff = curly_contrapasso(line)
+            if curly_diff != 0:
+                tabs += curly_diff
             tabs += paren_count
             abra_ca_dabra(el_lazo_death_count, tabs, 8)
         elif (
@@ -113,7 +127,7 @@ def run(text):
             tabs -= paren_ragnarok_count
             paren_ragnarok_count = 0
             abra_ca_dabra(el_lazo_death_count, tabs, 9)
-        elif ');' == line:
+        elif ');' == line or ')' == line:
             tabs -= 1
             paren_ragnarok_flag = False
             indent = tab_space*tabs
@@ -143,7 +157,7 @@ def run(text):
             indent = tab_space*tabs
             abra_ca_dabra(el_lazo_death_count, tabs, 15)
         else:
-            print('🤷  line {} '.format(str(el_lazo_death_count)) + line)
+            print('🤷🤷‍♀️🤷‍♀️lines are awake🙄🙄🙄 {}'.format(str(el_lazo_death_count)))
 
         # handle the fishy comma
         # if peaky_blinders_comma(line):
@@ -180,15 +194,15 @@ def run(text):
             and not host_awake_flag
             and tabs == 0
         ):
-            print('😱😱😱😱😱😱😱Lines are awake😱😱😱😱😱😱😱😱')
+            print('😱😱😱😱😱Only boring people get bored😱😱😱😱😱')
             abra_ca_dabra(el_lazo_death_count, tabs, -1)
-            print('👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽')
+            print('👽👽👽It doesn\'t look like anything to me👽👽👽')
             host_awake_flag = True
 
     # remove the last '\n'
     newtext = newtext[:-1]
     if tabs == 0:
-        print('\n🐱 If I fits, I sits 🐈')
+        print('\n🙀🐾😹If I fits, I sits😻🐾🐈')
     else:
         print('\n🏇🔫🤖violent delights have violent ends🤖🔫🏇')
     return newtext
@@ -311,3 +325,8 @@ def return_of_parenthesis(line):
     ):
         return True
     return False
+
+def curly_contrapasso(line):
+    open_count = line.count('{')
+    close_count = line.count('}')
+    return open_count - close_count
