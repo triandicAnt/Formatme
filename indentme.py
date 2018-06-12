@@ -116,8 +116,9 @@ def run(text):
         elif ');' == line:
             tabs -= 1
             paren_ragnarok_flag = False
-            abra_ca_dabra(el_lazo_death_count, tabs, 10)
             indent = tab_space*tabs
+            akane_no_mai_flag = False
+            abra_ca_dabra(el_lazo_death_count, tabs, 10)
         elif '}' in line and '{' in line and line[0] == '}':
             indent = tab_space*(tabs-1)
             open_count = line.count('{')
