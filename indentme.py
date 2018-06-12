@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 def run(text):
-    lines = text.split('\n')
+    lines = text.strip('\n').split('\n')
 
     tabs = 0
     diff = 0
@@ -22,7 +22,9 @@ def run(text):
     akane_no_mai_flag = False
     soql_rises_flag = False
     paren_ragnarok_flag = False
+    host_awake_flag = False
 
+    lines_count = len(lines)
     for line in lines:
         el_lazo_death_count += 1
 
@@ -88,7 +90,12 @@ def run(text):
         elif not soql_flag and virtù_e_fortuna(line):
             tabs -= 1
             abra_ca_dabra(el_lazo_death_count, tabs, 7)
-        elif not other_flag and parenthesis_ragnarok(line) > 0:
+        elif (
+            not other_flag
+            and not soql_flag
+            and not return_of_parenthesis(line)
+            and parenthesis_ragnarok(line) > 0
+        ):
             paren_count = parenthesis_ragnarok(line)
             if not paren_ragnarok_flag:
                 paren_ragnarok_count = paren_count
@@ -113,6 +120,12 @@ def run(text):
             indent = tab_space*tabs
         elif '}' in line and '{' in line and line[0] == '}':
             indent = tab_space*(tabs-1)
+            open_count = line.count('{')
+            close_count = line.count('}')
+            if open_count > close_count:
+                tabs += open_count - close_count
+            elif open_count < close_count:
+                tabs -= close_count - open_count
             abra_ca_dabra(el_lazo_death_count, tabs, 11)
         elif '}' in line and '{' in line:
             indent = tab_space*tabs
@@ -129,7 +142,7 @@ def run(text):
             indent = tab_space*tabs
             abra_ca_dabra(el_lazo_death_count, tabs, 15)
         else:
-            print(line)
+            print('🤷  line {} '.format(str(el_lazo_death_count)) + line)
 
         # handle the fishy comma
         # if peaky_blinders_comma(line):
@@ -160,12 +173,23 @@ def run(text):
             new_len = len(indent)-diff
             soql_end_indent = ' ' * new_len
 
+        # Find the line that's awake
+        if (
+            el_lazo_death_count != lines_count
+            and not host_awake_flag
+            and tabs == 0
+        ):
+            print('😱😱😱😱😱😱😱Lines are awake😱😱😱😱😱😱😱😱')
+            abra_ca_dabra(el_lazo_death_count, tabs, -1)
+            print('👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽👽')
+            host_awake_flag = True
+
     # remove the last '\n'
     newtext = newtext[:-1]
     if tabs == 0:
         print('\n🐱 If I fits, I sits 🐈')
     else:
-        print('\nviolent delights have violent ends 🤖🔫🏇')
+        print('\n🏇🔫🤖violent delights have violent ends🤖🔫🏇')
     return newtext
 
 def is_line_comment(line):
@@ -276,3 +300,13 @@ def abra_ca_dabra(line, tabs, index):
             )
         )
     )
+
+def return_of_parenthesis(line):
+    if (
+        "'(" in line
+        or "('" in line
+        or "')" in line
+        or ")'" in line
+    ):
+        return True
+    return False
