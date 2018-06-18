@@ -87,4 +87,4 @@ PS : Please expect a little misbehavior of the code as its not trained for few u
 
 Please report bugs in the `Issue` section and any improvements are welcomed using `Pull Request`.
 
-PS: 🙀🐾😹If I fits, I sits😻🐾🐈
+PS: 🙀🐾If I fits, I sits🐾🐈
