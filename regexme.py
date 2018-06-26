@@ -70,12 +70,12 @@ process == false
 def process_if_false(matchedobj):
     if 'if (' not in matchedobj.group(0) and 'else if (' not in matchedobj.group(0):
         return matchedobj.group(0)
-    return re.sub(r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true', process_if_false_is_back, matchedobj.group(0), flags=re.MULTILINE)
+    return re.sub(r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true', \
+        process_if_false_is_back, matchedobj.group(0), flags=re.MULTILINE)
 
 def process_if_false_is_back(matchedobj):
     new_regex = r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true'
     stmt = re.compile(r'\s*==\s*|\s*\!=\s*').split(matchedobj.group(0))[0].strip()
-    print(matchedobj.group(0))
     if not stmt:
         return matchedobj.group(0)
     if stmt[0] == '(':
@@ -190,8 +190,8 @@ def if_else_same_line(matchedobj):
     elif 'else' in stmt:
         # handle the else case
         stmts = stmt.split(' ')
-        return '\n{0}{1}\n{2}{3}'.format(leading_spaces, stmts[0],\
-            '{0}{1}'.format(leading_spaces, ' ' * 4),stmts[1].strip())
+        return_stmt = " ".join(stmts[1:])
+        return '\n{0}{1}\n{2}{3}'.format(leading_spaces, stmts[0],'{0}{1}'.format(leading_spaces, ' ' * 4),return_stmt.strip())
     else:
         return stmt
 
