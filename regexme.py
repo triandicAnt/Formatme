@@ -68,12 +68,20 @@ def process_if_true(matchedobj):
 process == false
 """
 def process_if_false(matchedobj):
+    if 'if (' not in matchedobj.group(0) and 'else if (' not in matchedobj.group(0):
+        return matchedobj.group(0)
+    return re.sub(r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true', process_if_false_is_back, matchedobj.group(0), flags=re.MULTILINE)
+
+def process_if_false_is_back(matchedobj):
+    new_regex = r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true'
     stmt = re.compile(r'\s*==\s*|\s*\!=\s*').split(matchedobj.group(0))[0].strip()
+    print(matchedobj.group(0))
     if not stmt:
         return matchedobj.group(0)
     if stmt[0] == '(':
         return '(!{0}'.format(stmt[1:])
     return '!{0}'.format(stmt)
+
 
 """
 if () {
@@ -212,56 +220,56 @@ def process_double_or(matchedobj):
         return ' || '
 
 regex_dict = OrderedDict([
-    ###### RULE #######                                                             ###### DOCUMENTATION ######
-    (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                      #0)  single line if else statement should be in the next line.
-    (r'^\s*(if|else)[^;{]+(;\')|^\s*(if|else)[^;{]+(;)', single_line_if_else),      #1)  single line if/else should be enclosed with curly braces
-    (r'if *\(', r'if ('),                                                           #2)  1 space between `if (`
-    (r'\} *else *\{', r'} else {'),                                                 #3)  1 space between `} else {`
-    (r'\} *else *if *\(', r'} else if ('),                                          #3)  1 space between `} else if (`
-    (r'for *\(', r'for ('),                                                         #4)  1 space between `for (`
-    (r'while *\(', r'while ('),                                                     #5)  1 space between `while (`
-    (r'> *\{', r'> {'),                                                             #6)  1 space between `> {`
-    (r'\) *\{', r') {'),                                                            #7)  1 space between `) {`
-    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                             #10) 1 space after `, `
-    (r', *\n', r', \n'),                                                            #11) no trailing space after `, `
-    (r'\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),              #12) 1 space around ` = `
-    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                 #13a) ` == `
-    # (r' *\+ *', r' + '),                                                          #14) `+`    # broken example: '10+'
-    # (r' *\- *', r' - '),                                                          #15) `-`    # broken example: 'Pre-Sale'
-    (r' *\+ *= *', r' += '),                                                        #13b) ` += `
-    (r' *\- *= *', r' -= '),                                                        #13c) ` -= `
-    (r' *\* *= *', r' *= '),                                                        #13d) ` *= `
-    (r' *= *> *', r' => '),                                                         #13e) ` => `
-    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*| *\/ *= *', process_divide_equals),            #13f) ` /= `
-    (r' *\! *= *', r' != '),                                                        #13g) ` != `
-    (r' *> *= *', r' >= '),                                                         #13h) ` >= `
-    (r' *< *= *', r' <= '),                                                         #13i) ` <= `
-    (r' *& *= *', r' &= '),                                                         #13j) ` &= `
-    (r' *\| *= *', ' |= '),                                                         #13k) ` |= `
-    (r' *\+\+ *', r'++'),                                                           #16) no space around `++`
-    (r' *\-\- *', r'--'),                                                           #17) no space around `--`
-    (r'\n{2,}', r'\n\n'),                                                           #20) at most 2 newlines
-    (r' *; *\n', r';\n'),                                                           #21) no spaces around `;`
-    (r' +$', ''),                                                                   #22) no trailing whitespaces
-    (r'(.+) (?i)testMethod (.+)', remove_test_method),                              #23) replace `testMethod` with `@isTest`
-    (r'(.+) class (.+) *{', class_name),                                            #24) 1 space between `SampleClass {`
-    (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                     #25) remove `== true` or `!= false`
-    (r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true', process_if_false),                    #26) convert `x == false|z != true ` to `!x`
-    (r'(.+)\n *\) *\{$', pre_process_multiline_loop),                               #27a)Fix multiline loops that end with '){' on new line
-    (r'^ *(for|if|while)[^{}]+{$', process_multiline_loop),                         #27b)1 newline between multiline forloop and `{`
-    (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                     #28) no newline between singline forloop and `{`
-    (r'(?i)\bSELECT\b *' , r'select '),                                             #29) lowercase soql keyword `select`
-    (r'(?i)\bFROM\b *' , r'from '),                                                 #30) lowercase soql keyword `from`
-    (r'(?i)\bWHERE\b *' , r'where '),                                               #31) lowercase soql keyword `where`
-    (r'(?i)\bLIMIT\b *' , r'limit '),                                               #32) lowercase soql keyword `limit`
-    (r'(?i)\bGROUP BY\b *' , r'group by '),                                         #33) lowercase soql keyword `group by`
-    (r'(?i)\bORDER BY\b *' , r'order by '),                                         #34) lowercase soql keyword `order by`
-    (r'(?i)\bHAVING\b *' , r'having '),                                             #35) lowercase soql keyword `having`
-    (r'\n{2}\s*}', remove_trailing_newline),                                        #36) remove trailing newline at end of functions
-    (r'({\s*get;\s*set;\s*})','{get; set;}'),                                       #37) get/set for class variables
-    (r'}\n+\s*else', format_if_else_same_line),                                     #38) else/else if should start with closing } of if
-    (r'try *\{', r'try {'),                                                         #39) 1 space between `try {`
-    (r'\} *catch *\(', r'} catch ('),                                               #40) 1 space between `} catch (`
-    (r'(\n *&& *| *&& *)', process_double_and),                                     #41) && should have 1 space before and after.
-    (r'\n *\|\| *| *\|\| *', process_double_or),                                    #42) || should have 1 space before and after.
+    ###### RULE #######                                                                     ###### DOCUMENTATION ######
+    (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                              #0)  single line if else statement should be in the next line.
+    (r'^\s*(if|else)[^;{]+(;\')|^\s*(if|else)[^;{]+(;)', single_line_if_else),              #1)  single line if/else should be enclosed with curly braces
+    (r'if *\(', r'if ('),                                                                   #2)  1 space between `if (`
+    (r'\} *else *\{', r'} else {'),                                                         #3)  1 space between `} else {`
+    (r'\} *else *if *\(', r'} else if ('),                                                  #3)  1 space between `} else if (`
+    (r'for *\(', r'for ('),                                                                 #4)  1 space between `for (`
+    (r'while *\(', r'while ('),                                                             #5)  1 space between `while (`
+    (r'> *\{', r'> {'),                                                                     #6)  1 space between `> {`
+    (r'\) *\{', r') {'),                                                                    #7)  1 space between `) {`
+    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                                     #10) 1 space after `, `
+    (r', *\n', r', \n'),                                                                    #11) no trailing space after `, `
+    (r'\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),                      #12) 1 space around ` = `
+    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                         #13a) ` == `
+    # (r' *\+ *', r' + '),                                                                  #14) `+`    # broken example: '10+'
+    # (r' *\- *', r' - '),                                                                  #15) `-`    # broken example: 'Pre-Sale'
+    (r' *\+ *= *', r' += '),                                                                #13b) ` += `
+    (r' *\- *= *', r' -= '),                                                                #13c) ` -= `
+    (r' *\* *= *', r' *= '),                                                                #13d) ` *= `
+    (r' *= *> *', r' => '),                                                                 #13e) ` => `
+    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*| *\/ *= *', process_divide_equals),                    #13f) ` /= `
+    (r' *\! *= *', r' != '),                                                                #13g) ` != `
+    (r' *> *= *', r' >= '),                                                                 #13h) ` >= `
+    (r' *< *= *', r' <= '),                                                                 #13i) ` <= `
+    (r' *& *= *', r' &= '),                                                                 #13j) ` &= `
+    (r' *\| *= *', ' |= '),                                                                 #13k) ` |= `
+    (r' *\+\+ *', r'++'),                                                                   #16) no space around `++`
+    (r' *\-\- *', r'--'),                                                                   #17) no space around `--`
+    (r'\n{2,}', r'\n\n'),                                                                   #20) at most 2 newlines
+    (r' *; *\n', r';\n'),                                                                   #21) no spaces around `;`
+    (r' +$', ''),                                                                           #22) no trailing whitespaces
+    (r'(.+) (?i)testMethod (.+)', remove_test_method),                                      #23) replace `testMethod` with `@isTest`
+    (r'(.+) class (.+) *{', class_name),                                                    #24) 1 space between `SampleClass {`
+    (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             #25) remove `== true` or `!= false`
+    (r'(.+)\s*(\S)+\s*==\s*false\s*(.+)|(.+)\s*(\S)+\s*!=\s*true\s*(.+)', process_if_false),#26) convert `x == false|z != true ` to `!x`
+    (r'(.+)\n *\) *\{$', pre_process_multiline_loop),                                       #27a)Fix multiline loops that end with '){' on new line
+    (r'^ *(for|if|while)[^{}]+{$', process_multiline_loop),                                 #27b)1 newline between multiline forloop and `{`
+    (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                             #28) no newline between singline forloop and `{`
+    (r'(?i)\bSELECT\b *' , r'select '),                                                     #29) lowercase soql keyword `select`
+    (r'(?i)\bFROM\b *' , r'from '),                                                         #30) lowercase soql keyword `from`
+    (r'(?i)\bWHERE\b *' , r'where '),                                                       #31) lowercase soql keyword `where`
+    (r'(?i)\bLIMIT\b *' , r'limit '),                                                       #32) lowercase soql keyword `limit`
+    (r'(?i)\bGROUP BY\b *' , r'group by '),                                                 #33) lowercase soql keyword `group by`
+    (r'(?i)\bORDER BY\b *' , r'order by '),                                                 #34) lowercase soql keyword `order by`
+    (r'(?i)\bHAVING\b *' , r'having '),                                                     #35) lowercase soql keyword `having`
+    (r'\n{2}\s*}', remove_trailing_newline),                                                #36) remove trailing newline at end of functions
+    (r'({\s*get;\s*set;\s*})','{get; set;}'),                                               #37) get/set for class variables
+    (r'}\n+\s*else', format_if_else_same_line),                                             #38) else/else if should start with closing } of if
+    (r'try *\{', r'try {'),                                                                 #39) 1 space between `try {`
+    (r'\} *catch *\(', r'} catch ('),                                                       #40) 1 space between `} catch (`
+    (r'(\n *&& *| *&& *)', process_double_and),                                             #41) && should have 1 space before and after.
+    (r'\n *\|\| *| *\|\| *', process_double_or),                                            #42) || should have 1 space before and after.
 ])
