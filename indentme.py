@@ -428,7 +428,7 @@ def abra_ca_dabra(line, tabs, index):
 def return_of_parenthesis(line):
     if (
         "'(" in line
-        or "('" in line
+        # or "('" in line
         # or "')" in line
         or ")'" in line
     ):

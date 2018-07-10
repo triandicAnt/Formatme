@@ -218,6 +218,32 @@ def process_double_or(matchedobj):
     else:
         return ' || '
 
+def move_single_bracket_to_new_line(matchedobj):
+    """
+    Opp o = new Opp(
+    D = d,
+    E = e);
+    Opp o = new Opp(
+        D = d,
+        E = e
+    );
+    """
+    stmt = matchedobj.group(0)
+    if ']);' in stmt:
+        return stmt
+    count_curly_diff = stmt.count('}') - stmt.count('{')
+    count_paren_diff = stmt.count(')') - stmt.count('(')
+    if count_curly_diff == 0 and count_paren_diff == 0:
+        return stmt
+    if stmt.strip() == ');' or stmt.strip() == '});':
+        return stmt
+    print(stmt)
+    if count_paren_diff > 0:
+        if count_curly_diff == 0:
+            return stmt[:-2] + '\n' + ');'
+        else:
+            return stmt[:-3] + '\n' + '});'
+
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
     (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                              #0)  single line if else statement should be in the next line.
@@ -271,4 +297,6 @@ regex_dict = OrderedDict([
     (r'\} *catch *\(', r'} catch ('),                                                       #40) 1 space between `} catch (`
     (r'(\n *&& *| *&& *)', process_double_and),                                             #41) && should have 1 space before and after.
     (r'\n *\|\| *| *\|\| *', process_double_or),                                            #42) || should have 1 space before and after.
+    # IMP : this will work with indent_me only
+    (r'(.+)\}\)\;$|(.+)\)\;$', move_single_bracket_to_new_line),                            #43) ); and }); to a newline
 ])
