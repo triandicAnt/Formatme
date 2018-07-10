@@ -74,7 +74,6 @@ def process_if_false(matchedobj):
         process_if_false_is_back, matchedobj.group(0), flags=re.MULTILINE)
 
 def process_if_false_is_back(matchedobj):
-    new_regex = r'(\S)+\s*==\s*false|(\S)+\s*!=\s*true'
     stmt = re.compile(r'\s*==\s*|\s*\!=\s*').split(matchedobj.group(0))[0].strip()
     if not stmt:
         return matchedobj.group(0)
@@ -254,7 +253,7 @@ regex_dict = OrderedDict([
     (r'(.+) (?i)testMethod (.+)', remove_test_method),                                      #23) replace `testMethod` with `@isTest`
     (r'(.+) class (.+) *{', class_name),                                                    #24) 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             #25) remove `== true` or `!= false`
-    (r'(.+)\s*(\S)+\s*==\s*false\s*(.+)|(.+)\s*(\S)+\s*!=\s*true\s*(.+)', process_if_false),#26) convert `x == false|z != true ` to `!x`
+    (r'(.+)==\s*false\s*(.+)|(.+)!=\s*true\s*(.+)', process_if_false),                      #26) convert `x == false|z != true ` to `!x`
     (r'(.+)\n *\) *\{$', pre_process_multiline_loop),                                       #27a)Fix multiline loops that end with '){' on new line
     (r'^ *(for|if|while)[^{}]+{$', process_multiline_loop),                                 #27b)1 newline between multiline forloop and `{`
     (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                             #28) no newline between singline forloop and `{`
