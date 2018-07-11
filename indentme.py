@@ -5,7 +5,6 @@ def run(text):
 
     tabs = 0
     diff = 0
-    el_lazo_death_count = 0
     akane_no_mai_count = 0
     paren_ragnarok_count = 0
     parenthesis_diff_count = 0
@@ -17,7 +16,6 @@ def run(text):
     soql_start_indent = ''
     soql_end_indent = ''
 
-    is_current_line_closes = False
     soql_flag = False
     soql_end_flag = False
     other_flag = False
@@ -25,21 +23,25 @@ def run(text):
     soql_rises_flag = False
     paren_ragnarok_flag = False
     host_awake_flag = False
+    block_comment_flag = False
 
-    lines_count = len(lines)
-    for line in lines:
-        el_lazo_death_count += 1
+    total_num_of_lines = len(lines)
+    for line_number in range(0, total_num_of_lines):
+        orig_line = lines[line_number]
+        line = orig_line.strip()
 
-        if is_line_comment(line.strip()):
-            newtext += line + '\n'
+        if is_line_comment(line, block_comment_flag):
+            newtext += orig_line + '\n'
+            if line.startswith('/*'):
+                block_comment_flag = True
+            elif line.endswith('*/'):
+                block_comment_flag = False
             continue
-        line = line.strip()
         if len(line) == 0:
             newtext += '\n'
             continue
 
-        is_comment = is_line_comment(line)
-        open_parenthesis,close_parenthesis = is_parenthesis(line)
+        open_parenthesis, close_parenthesis = get_parenthesis_count(line)
         # soql
         if soql_flag:
             indent = soql_start_indent
@@ -57,16 +59,16 @@ def run(text):
             indent = tab_space*tabs
             akane_no_mai_count = open_parenthesis - close_parenthesis
             tabs += akane_no_mai_count
-            abra_ca_dabra(el_lazo_death_count, tabs, 1)
+            abra_ca_dabra(line_number, tabs, 1)
         # multiline return start
         elif 'return' in line and line[-1] != ';':
             other_flag = True
             tabs += 1
-            abra_ca_dabra(el_lazo_death_count, tabs, 2)
+            abra_ca_dabra(line_number, tabs, 2)
         # multiline return end
         elif other_flag and ';' in line:
             tabs -= 1
-            abra_ca_dabra(el_lazo_death_count, tabs, 3)
+            abra_ca_dabra(line_number, tabs, 3)
             other_flag = False
         # multiline if/else if/for start
         elif (
@@ -90,7 +92,7 @@ def run(text):
                 parenthesis_diff_count = 0
                 parenthesis_tabs_count = 0
             print('in 4 diff = ' + str(parenthesis_diff_count) + ' tabs = ' + str(parenthesis_tabs_count))
-            abra_ca_dabra(el_lazo_death_count, tabs, 4)
+            abra_ca_dabra(line_number, tabs, 4)
             akane_no_mai_flag = True
         elif (
             '));' == line
@@ -119,7 +121,7 @@ def run(text):
                 parenthesis_tabs_count -= 1
             akane_no_mai_flag = False
             indent = tab_space*tabs
-            abra_ca_dabra(el_lazo_death_count, tabs, 10)
+            abra_ca_dabra(line_number, tabs, 10)
         # multiline if/else if/for start
         elif (
             not soql_flag
@@ -129,7 +131,7 @@ def run(text):
             and not return_of_parenthesis(line)
             and close_parenthesis > open_parenthesis
         ):
-            open_count, close_count = is_parenthesis(line)
+            open_count, close_count = get_parenthesis_count(line)
             diff_count = close_count-open_count
             parenthesis_diff_count += open_count - close_count
             if paren_ragnarok_flag:
@@ -160,12 +162,12 @@ def run(text):
                 tabs -= parenthesis_tabs_count
                 parenthesis_tabs_count = 0
             print('in 5 diff = ' + str(parenthesis_diff_count) + ' tabs = ' + str(parenthesis_tabs_count))
-            abra_ca_dabra(el_lazo_death_count, tabs, 5)
+            abra_ca_dabra(line_number, tabs, 5)
         # )] and ]; with multiline if/else/for
         elif les_ecorchés(line) and akane_no_mai_flag:
             tabs -= 1
             akane_no_mai_count = 0
-            abra_ca_dabra(el_lazo_death_count, tabs, 6)
+            abra_ca_dabra(line_number, tabs, 6)
             akane_no_mai_flag = False
         # multiline ) statement end
         elif (
@@ -174,7 +176,7 @@ def run(text):
             and virtù_e_fortuna(line)
         ):
             tabs -= 1
-            abra_ca_dabra(el_lazo_death_count, tabs, 7)
+            abra_ca_dabra(line_number, tabs, 7)
         # multiline statement start
         elif (
             not other_flag
@@ -196,7 +198,7 @@ def run(text):
                 tabs += 1
             elif paren_count < 0:
                 tabs -= 1
-            abra_ca_dabra(el_lazo_death_count, tabs, 8)
+            abra_ca_dabra(line_number, tabs, 8)
         # multiline statement end
         elif (
             not other_flag
@@ -216,7 +218,7 @@ def run(text):
             if line == '});':
                 indent = tab_space*tabs
             paren_ragnarok_count = 0
-            abra_ca_dabra(el_lazo_death_count, tabs, 9)
+            abra_ca_dabra(line_number, tabs, 9)
         elif '}' in line and '{' in line and line[0] == '}':
             indent = tab_space*(tabs-1)
             open_count = line.count('{')
@@ -225,37 +227,35 @@ def run(text):
                 tabs += open_count - close_count
             elif open_count < close_count:
                 tabs -= close_count - open_count
-            abra_ca_dabra(el_lazo_death_count, tabs, 11)
+            abra_ca_dabra(line_number, tabs, 11)
         elif '}' in line and '{' in line:
             indent = tab_space*tabs
-            abra_ca_dabra(el_lazo_death_count, tabs, 12)
+            abra_ca_dabra(line_number, tabs, 12)
         elif '{' in line:
             indent = tab_space*tabs
             tabs += line.count('{')
             if akane_no_mai_flag:
                 parenthesis_diff_count += line.count('{')
                 parenthesis_tabs_count += line.count('{')
-            print('in 13 diff = ' + str(parenthesis_diff_count) + ' tabs = ' + str(parenthesis_tabs_count))
-            abra_ca_dabra(el_lazo_death_count, tabs, 13)
+            abra_ca_dabra(line_number, tabs, 13)
         elif '}' in line:
             tabs -= line.count('}')
             if akane_no_mai_flag:
-                open_count,close_count = is_parenthesis(line)
+                open_count,close_count = get_parenthesis_count(line)
                 parenthesis_diff_count += open_count - close_count
                 parenthesis_tabs_count -= line.count('}')
-            print('in 14 diff = ' + str(parenthesis_diff_count) + ' tabs = ' + str(parenthesis_tabs_count))
             indent = tab_space*tabs
-            abra_ca_dabra(el_lazo_death_count, tabs, 14)
+            abra_ca_dabra(line_number, tabs, 14)
         # soql in the same line
         elif start_soql_query(line) and end_soql_query(line):
             indent = tab_space*tabs
             soql_flag = False
-            abra_ca_dabra(el_lazo_death_count, tabs, 16)
+            abra_ca_dabra(line_number, tabs, 16)
         elif not soql_flag:
             indent = tab_space*tabs
-            abra_ca_dabra(el_lazo_death_count, tabs, 15)
+            abra_ca_dabra(line_number, tabs, 15)
         else:
-            print('🤷🤷‍♀️🤷‍♀️lines are awake🙄🙄🙄 {}'.format(str(el_lazo_death_count)))
+            print('🤷🤷‍♀️🤷‍♀️lines are awake🙄🙄🙄 {}'.format(str(line_number)))
 
         # handle the fishy comma
         # if peaky_blinders_comma(line):
@@ -291,12 +291,12 @@ def run(text):
 
         # Find the line that's awake
         if (
-            el_lazo_death_count != lines_count
+            line_number != total_num_of_lines
             and not host_awake_flag
             and tabs == 0
         ):
             print('😱😱😱😱😱Only boring people get bored😱😱😱😱😱')
-            abra_ca_dabra(el_lazo_death_count, tabs, -1)
+            abra_ca_dabra(line_number, tabs, -1)
             print('👽👽👽It doesn\'t look like anything to me👽👽👽')
             host_awake_flag = True
 
@@ -308,12 +308,13 @@ def run(text):
         print('\n🏇🔫🤖violent delights have violent ends🤖🔫🏇')
     return newtext
 
-def is_line_comment(line):
+def is_line_comment(line, block_comment_flag):
     return (
         line.startswith('/*')
         or line.startswith('*')
         or line.endswith('*/')
         or line.startswith('//')
+        or block_comment_flag
     )
 
 def start_soql_query(line):
@@ -322,7 +323,7 @@ def start_soql_query(line):
 def end_soql_query(line):
     return '];' in line
 
-def is_parenthesis(line):
+def get_parenthesis_count(line):
     open_count = line.count('(')
     close_count = line.count(')')
     return (open_count,close_count)
@@ -330,14 +331,17 @@ def is_parenthesis(line):
 def red_right_hand(line):
     """
     1.Split by comma
-        If line contains split / = ',' / = ', ' skip it.
+        If line contains
+        (1) .split(
+        (2) = ','
+        (3) = ', '
+        then skip it.
         Divide and rule
     """
     if (
-        'split' in line
+        '.split(' in line
         or "= ','" in line
         or "= ', '" in line
-        or is_line_comment(line)
     ):
         return line
     # split line by comma and join them together with spaces
@@ -372,11 +376,10 @@ def elephant_stone_strip(word):
     return word.strip()
 
 def akane_no_mai(line):
-    open_parenthesis,close_parenthesis = is_parenthesis(line)
+    open_parenthesis,close_parenthesis = get_parenthesis_count(line)
     if (
         (
             'if (' in line
-            or 'else if (' in line
             or 'for (' in line
             or line[-1] == '('
             or (
@@ -390,7 +393,7 @@ def akane_no_mai(line):
     return False
 
 def virtù_e_fortuna(line):
-    open_parenthesis,close_parenthesis = is_parenthesis(line)
+    open_parenthesis, close_parenthesis = get_parenthesis_count(line)
     if line [-1] == ')' and close_parenthesis > open_parenthesis:
         return True
     return False
@@ -401,11 +404,11 @@ def les_ecorchés(line):
     return False
 
 def parenthesis_ragnarok(line):
-    open_parenthesis,close_parenthesis = is_parenthesis(line)
+    open_parenthesis,close_parenthesis = get_parenthesis_count(line)
     return open_parenthesis - close_parenthesis
 
 def parenthesis_rises(line):
-    open_parenthesis,close_parenthesis = is_parenthesis(line)
+    open_parenthesis,close_parenthesis = get_parenthesis_count(line)
     if (
         len(line) > 2
         and (line [-1] == ')' or line[-2:] == ');')
@@ -426,14 +429,12 @@ def abra_ca_dabra(line, tabs, index):
     )
 
 def return_of_parenthesis(line):
-    if (
+    return (
         "'(" in line
         # or "('" in line
         # or "')" in line
         or ")'" in line
-    ):
-        return True
-    return False
+    )
 
 def curly_contrapasso(line):
     open_count = line.count('{')
