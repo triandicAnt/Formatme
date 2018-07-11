@@ -26,8 +26,8 @@ def run(text):
     block_comment_flag = False
 
     total_num_of_lines = len(lines)
-    for line_number in range(0, total_num_of_lines):
-        orig_line = lines[line_number]
+    for i in range(0, total_num_of_lines):
+        orig_line = lines[i]
         line = orig_line.strip()
 
         if is_line_comment(line, block_comment_flag):
@@ -41,6 +41,7 @@ def run(text):
             newtext += '\n'
             continue
 
+        line_number = i + 1
         open_parenthesis, close_parenthesis = get_parenthesis_count(line)
         # soql
         if soql_flag:
@@ -91,7 +92,6 @@ def run(text):
             if start_soql_query(line):
                 parenthesis_diff_count = 0
                 parenthesis_tabs_count = 0
-            print('in 4 diff = ' + str(parenthesis_diff_count) + ' tabs = ' + str(parenthesis_tabs_count))
             abra_ca_dabra(line_number, tabs, 4)
             akane_no_mai_flag = True
         elif (
@@ -103,7 +103,6 @@ def run(text):
             paren_ragnarok_flag = False
             akane_no_mai_count -= line.count(')')
             # parenthesis_diff_count -= 1
-            print('in 10 diff = ' + str(parenthesis_diff_count) + ' tabs = ' + str(parenthesis_tabs_count))
             # if line == '});':
             #     tabs -= 2
             #     parenthesis_diff_count = 0
@@ -161,7 +160,6 @@ def run(text):
             ):
                 tabs -= parenthesis_tabs_count
                 parenthesis_tabs_count = 0
-            print('in 5 diff = ' + str(parenthesis_diff_count) + ' tabs = ' + str(parenthesis_tabs_count))
             abra_ca_dabra(line_number, tabs, 5)
         # )] and ]; with multiline if/else/for
         elif les_ecorchés(line) and akane_no_mai_flag:
