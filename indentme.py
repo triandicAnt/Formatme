@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 
 def run(text):
     lines = text.strip('\n').split('\n')
@@ -319,7 +320,9 @@ def start_soql_query(line):
     return ': [' in line or '= [' in line or '([' in line
 
 def end_soql_query(line):
-    return '];' in line
+    # return '];' in line
+     r = re.compile(r'](.+)*;$')
+     return r.search(line) != None
 
 def get_parenthesis_count(line):
     open_count = line.count('(')
