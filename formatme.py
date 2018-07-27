@@ -4,6 +4,7 @@ import sublime
 import sublime_plugin
 import Formatme.regexme as rm
 import Formatme.indentme as im
+import Formatme.setup_me as sm
 
 # do you want to format the whole file or only a selection?
 process_all = True
@@ -25,7 +26,8 @@ def process_whole_file(self, edit):
     text = self.view.substr(region)
     text_bkp = text
     text = format_me(text)
-    text = indent_me(text)
+    # text = setup_me(text)
+    # text = indent_me_retuns_back_from_future(text)
     # Replace the text only if it has been modified
     if text != text_bkp:
         replace_text(self, edit, region, text)
@@ -43,6 +45,9 @@ def format_me(text):
 
 def indent_me(text):
     return im.run(text)
+
+def setup_me(text):
+    return sm.run(text)
 
 def replace_text(self, edit, region, text):
     self.view.replace(edit, region, text)

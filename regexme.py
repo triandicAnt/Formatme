@@ -169,6 +169,8 @@ def if_else_same_line(matchedobj):
     # First find the occurence of '('
     if not stmt:
         return
+    if is_character_in_quotes(stmt, 'else'):
+        return stmt
     leading_spaces = ' '*(len(stmt) - len(stmt.lstrip('\n*').lstrip(' ')))
     stmt = stmt.strip()
     if 'if' in stmt or 'else if' in stmt:
@@ -231,23 +233,52 @@ def move_single_bracket_to_new_line(matchedobj):
     stmt = matchedobj.group(0)
     if ']);' in stmt:
         return stmt
+    if (
+        stmt.strip() == ');'
+        or stmt.strip() == '});'
+        or stmt.strip() == '));'
+        or is_character_in_quotes(stmt, '(')
+        or is_character_in_quotes(stmt, ')')
+    ):
+        return stmt
     count_curly_diff = stmt.count('}') - stmt.count('{')
     count_paren_diff = stmt.count(')') - stmt.count('(')
+    print(stmt)
     if count_curly_diff == 0 and count_paren_diff == 0:
         return stmt
-    if stmt.strip() == ');' or stmt.strip() == '});':
-        return stmt
-    print(stmt)
-    if count_paren_diff > 0:
-        if count_curly_diff == 0:
-            return stmt[:-2] + '\n' + ');'
-        else:
-            return stmt[:-3] + '\n' + '});'
+    if stmt.count(')') == 1:
+        return stmt[:-2] + '\n' + ');'
+    elif stmt[-3:] == '));' and count_paren_diff == 2:
+        return stmt[:-3] + '\n' + '));'
+    elif stmt[-3:] == '});' and count_curly_diff > 0:
+        return stmt[:-3] + '\n' + '});'
+    return stmt
+    # if count_paren_diff > 0:
+    #     if count_curly_diff == 0:
+    #         return stmt[:-2] + '\n' + ');'
+    #     else:
+    #         return stmt[:-3] + '\n' + '});'
+
+def is_character_in_quotes(line, char):
+    stmt = re.search(r'\'(.+)\'', line)
+    # stmt1 = re.search(r'(.+)\'', line)
+    # stmt2 = re.search(r'\'(.+)', line)
+    if (
+        not stmt
+        # and not stmt1
+        # and not stmt2
+    ):
+        return False
+    return (
+        (stmt and char in stmt.group(0))
+        # or (stmt1 and char in stmt1.group(0))
+        # or (stmt2 and char in stmt2.group(0))
+    )
 
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
     (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                              # single line if else statement should be in the next line.
-    (r'^\s*(if|else)[^;{]+(;\')|^\s*(if|else)[^;{]+(;)', single_line_if_else),              # single line if/else should be enclosed with curly braces
+    (r'^\s*(if\s*\(|else)[^;{]+(;\')|^\s*(if\s*\(|else)[^;{]+(;)', single_line_if_else),              # single line if/else should be enclosed with curly braces
     (r'if *\(', r'if ('),                                                                   # 1 space between `if (`
     (r'\} *else *\{', r'} else {'),                                                         # 1 space between `} else {`
     (r'\} *else *if *\(', r'} else if ('),                                                  # 1 space between `} else if (`
@@ -281,7 +312,7 @@ regex_dict = OrderedDict([
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             # remove `== true` or `!= false`
     (r'(.+)==\s*false\s*(.+)|(.+)!=\s*true\s*(.+)', process_if_false),                      # convert `x == false|z != true ` to `!x`
     (r'(.+)\n *\) *\{$', pre_process_multiline_loop),                                       # Fix multiline loops that end with '){' on new line
-    (r'^ *(for|if|while)[^{}]+{$', process_multiline_loop),                                 # 1 newline between multiline forloop and `{`
+    (r'^ *(for\s*\(|if\s*\(|while\s*\()[^{}]+{$', process_multiline_loop),                                 # 1 newline between multiline forloop and `{`
     (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                             # no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                                     # lowercase soql keyword `select`
     (r'(?i)\bFROM\b *' , r'from '),                                                         # lowercase soql keyword `from`

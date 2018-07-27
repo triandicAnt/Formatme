@@ -19,24 +19,26 @@ def run(text):
 
     soql_flag = False
     soql_end_flag = False
-    other_flag = False
+    return_flag = False
     akane_no_mai_flag = False
     soql_rises_flag = False
     paren_ragnarok_flag = False
     host_awake_flag = False
     block_comment_flag = False
+    no_semicolon_flag = False
+    return_paren_Flag = False
+    open_curly_Flag = False
 
     total_num_of_lines = len(lines)
     for i in range(0, total_num_of_lines):
         orig_line = lines[i]
         line = orig_line.strip()
-
+        if line.startswith('/*'):
+            block_comment_flag = True
+        elif line.endswith('*/'):
+            block_comment_flag = False
         if is_line_comment(line, block_comment_flag):
             newtext += orig_line + '\n'
-            if line.startswith('/*'):
-                block_comment_flag = True
-            elif line.endswith('*/'):
-                block_comment_flag = False
             continue
         if len(line) == 0:
             newtext += '\n'
@@ -56,7 +58,12 @@ def run(text):
             indent = tab_space*tabs
 
         # } and if/else/for
-        if '}' in line and not soql_flag and akane_no_mai(line):
+        if (
+            not is_character_in_quotes(line, '}')
+            and '}' in line
+            and not soql_flag
+            and akane_no_mai(line)
+        ):
             tabs -= line.count('}')
             indent = tab_space*tabs
             akane_no_mai_count = open_parenthesis - close_parenthesis
@@ -64,18 +71,29 @@ def run(text):
             abra_ca_dabra(line_number, tabs, 1)
         # multiline return start
         elif 'return' in line and line[-1] != ';':
-            other_flag = True
+            return_flag = True
             tabs += 1
             abra_ca_dabra(line_number, tabs, 2)
         # multiline return end
-        elif other_flag and ';' in line:
+        elif return_flag and ';' in line:
+            print(return_paren_Flag)
             tabs -= 1
+            if (
+                line.strip() == '));'
+                or line.strip() == ');'
+                or line.strip() == '});'
+            ):
+                if return_paren_Flag and len(line.strip()) > 2:
+                    tabs -= 1
+                    return_paren_Flag = False
+                indent = tab_space*tabs
             abra_ca_dabra(line_number, tabs, 3)
-            other_flag = False
+            return_flag = False
         # multiline if/else if/for start
         elif (
             not soql_flag
-            and not other_flag
+            and not return_flag
+            and not is_character_in_quotes(line, '(')
             and akane_no_mai(line)
         ):
             diff = (open_parenthesis-close_parenthesis)
@@ -96,10 +114,11 @@ def run(text):
             abra_ca_dabra(line_number, tabs, 4)
             akane_no_mai_flag = True
         elif (
-            '));' == line
+            not soql_flag
+            and ('));' == line
             or ');' == line
             or '});' == line
-            or ')' == line
+            or ')' == line)
         ):
             paren_ragnarok_flag = False
             akane_no_mai_count -= line.count(')')
@@ -125,7 +144,7 @@ def run(text):
         # multiline if/else if/for start
         elif (
             not soql_flag
-            and not other_flag
+            and not return_flag
             #and line[-1] == ')'
             and akane_no_mai_flag
             and not return_of_parenthesis(line)
@@ -171,15 +190,17 @@ def run(text):
         # multiline ) statement end
         elif (
             not soql_flag
-            and not other_flag
+            and not return_flag
             and virtù_e_fortuna(line)
         ):
             tabs -= 1
             abra_ca_dabra(line_number, tabs, 7)
         # multiline statement start
         elif (
-            not other_flag
+            not return_flag
             and not soql_flag
+            and not is_character_in_quotes(line, '(')
+            and not is_character_in_quotes(line, ')')
             and not return_of_parenthesis(line)
             and parenthesis_ragnarok(line) > 0
         ):
@@ -200,7 +221,7 @@ def run(text):
             abra_ca_dabra(line_number, tabs, 8)
         # multiline statement end
         elif (
-            not other_flag
+            not return_flag
             and paren_ragnarok_flag
             and parenthesis_rises(line)
         ):
@@ -233,12 +254,18 @@ def run(text):
         elif '{' in line:
             indent = tab_space*tabs
             tabs += line.count('{')
+            if return_flag:
+                return_paren_Flag = True
+            if is_line_data_structure(line):
+                open_curly_Flag = True
             if akane_no_mai_flag:
                 parenthesis_diff_count += line.count('{')
                 parenthesis_tabs_count += line.count('{')
             abra_ca_dabra(line_number, tabs, 13)
         elif '}' in line:
             tabs -= line.count('}')
+            if open_curly_Flag:
+                open_curly_Flag = False
             if akane_no_mai_flag:
                 open_count,close_count = get_parenthesis_count(line)
                 parenthesis_diff_count += open_count - close_count
@@ -250,8 +277,23 @@ def run(text):
             indent = tab_space*tabs
             soql_flag = False
             abra_ca_dabra(line_number, tabs, 16)
-        elif not soql_flag:
+        elif (
+            not return_flag
+            and not soql_flag
+            and not akane_no_mai_flag
+            and not open_curly_Flag
+            and not start_soql_query(line)
+            and not is_character_in_quotes(line, ';')
+            and not is_line_keywords(line)
+        ):
             indent = tab_space*tabs
+            if ';' not in line:
+                if not no_semicolon_flag:
+                    no_semicolon_flag = True
+                    tabs += 1
+            elif no_semicolon_flag:
+                no_semicolon_flag = False
+                tabs -= 1
             abra_ca_dabra(line_number, tabs, 15)
         else:
             print('🤷🤷‍♀️🤷‍♀️lines are awake🙄🙄🙄 {}'.format(str(line_number)))
@@ -271,18 +313,22 @@ def run(text):
             square_bracket_index = 0
             soql_flag = True
             if ': [' in newline:
-                square_bracket_index = newline.index(': [') + 3
+                square_bracket_index = newline.index(': [') + 4
             elif '= [' in newline:
-                square_bracket_index = newline.index('= [') + 3
+                square_bracket_index = newline.index('= [') + 4
             elif '([' in newline:
-                square_bracket_index = newline.index('([') + 2
+                square_bracket_index = newline.index('([') + 3
             # next lines indent would be indent + diff
             if not soql_start_indent:
                 diff = square_bracket_index - len(soql_start_indent) - 1
             else:
                 diff = square_bracket_index - len(indent)
             soql_start_indent += (' ' * diff) #+ tab_space
-        if ('])' in newline or '];' in newline):
+        if (
+            '])' in newline
+            or '];' in newline
+            or ')];' in newline
+        ):
             soql_flag = False
             soql_end_flag = True
             new_len = len(indent)-diff
@@ -400,7 +446,11 @@ def virtù_e_fortuna(line):
     return False
 
 def les_ecorchés(line):
-    if '])' in line or '];' in line:
+    if (
+        '])' in line
+        or '];' in line
+        or ')];' in line
+    ):
         return True
     return False
 
@@ -441,3 +491,34 @@ def curly_contrapasso(line):
     open_count = line.count('{')
     close_count = line.count('}')
     return open_count - close_count
+
+def is_line_keywords(line):
+    line = line.strip().lower()
+    return (
+        line == 'override'
+        or line == '@override'
+        or line == '@istest'
+        or line == '@testsetup'
+        or line == '@testvisible'
+    )
+
+def is_character_in_quotes(line, char):
+    stmt = re.search(r'\'(.+)\'', line)
+    if not stmt:
+        return False
+    return char in stmt.group(0)
+
+def is_line_data_structure(line):
+    stmt = re.search(r'(.+)\{$', line)
+    if not stmt:
+        return False
+    data_strucrtures = {
+        'List',
+        'Set',
+        'Map',
+        'enum'
+    }
+    for ds in data_strucrtures:
+        if ds in stmt.group(0):
+            return True
+    return False
