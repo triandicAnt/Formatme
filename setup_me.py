@@ -14,18 +14,12 @@ def run(text):
     lines = text.strip('\n').split('\n')
     newtext = ''
     for l in lines:
-        l = setup_me(l, '(', ')')
-        print(l + '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-        l = setup_me(l, '{', '}')
-        print(l + '************************************')
+        l = setup_me(l, OPEN_PARENTHESIS, CLOSE_PARENTHESIS)
+        l = setup_me(l, OPEN_CURLY_BRACKET, CLOSE_CURLY_BRACKET)
         newtext += l + NEW_LINE
-        print('^^^')
     return newtext.strip(NEW_LINE)
 
 def setup_me(line, open, close):
-    # print('********************************')
-    # print(line)
-    # print('********************************')
     if is_loops_and_conditionals(line):
         return line
     split_list = line.split(NEW_LINE)
@@ -39,36 +33,7 @@ def setup_me(line, open, close):
             # print(indices)
             if indices:
                 split_list[index] = get_formatted_line(l, indices[0])
-                # print('----------------------------- in (((((   ')
-                # print(''.join(split_list))
-                # print('----------------------------- )))))))')
                 split_list[index] = setup_me(''.join(split_list),open, close)
-    return NEW_LINE.join(split_list).strip(NEW_LINE)
-
-
-def setup_me2(line):
-    # print('********************************')
-    # print(line)
-    # print('********************************')
-    if is_loops_and_conditionals(line):
-        return line
-    split_list = line.split(NEW_LINE)
-    # print(split_list)
-    for index, l in enumerate(split_list):
-        if l.strip() == '':
-            continue
-        needs_format_curly, curly = check_is_formatted_curly(l)
-        if needs_format_curly:
-            indices = find_index_of_unmatched_bracket(l, '{', '}')
-            # print(indices)
-            if indices:
-                split_list[index] = get_formatted_line(l, indices[0])
-                # print('-----------------------------  in {{{{{')
-                # print(''.join(split_list))
-                # print('----------------------------- }}}}}}}')
-                split_list[index] = setup_me(''.join(split_list), '{', '}')
-        else:
-            continue
     return NEW_LINE.join(split_list).strip(NEW_LINE)
 
 def get_formatted_line(line, index):
@@ -105,28 +70,6 @@ def check_is_formatted(line, open, close):
         elif line[-1] != close:
             return (True, close)
     return (False, '')
-
-def check_is_formatted_curly(line):
-    """
-    @brief      Check if the curly is formatted.
-
-    @param      line  The line
-
-    @return     True if the line is curly formatted, False otherwise.
-    """
-    # get curly count
-    open_curly, close_curly = get_bracket_count(line, '{', '}')
-    # get diff
-    diff_curly = open_curly - close_curly
-    if diff_curly > 0 and line[-1] != '{':
-        return (True, '{')
-    elif diff_curly < 0:
-        if line[-1] == ';' and len(line) > 2 and line[-2] != '}':
-            return (True, '}')
-        elif line[-1] != '}':
-            return (True, '}')
-    return (False, '')
-
 
 def is_loops_and_conditionals(line):
     """

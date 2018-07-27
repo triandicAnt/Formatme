@@ -243,7 +243,6 @@ def move_single_bracket_to_new_line(matchedobj):
         return stmt
     count_curly_diff = stmt.count('}') - stmt.count('{')
     count_paren_diff = stmt.count(')') - stmt.count('(')
-    print(stmt)
     if count_curly_diff == 0 and count_paren_diff == 0:
         return stmt
     if stmt.count(')') == 1:
