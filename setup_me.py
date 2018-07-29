@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import re
+import Formatme.constant as CONST
 
 LOOPS_AND_CONDITIONAL_SET = {'if (', 'for (', 'while ('}
 NEW_LINE = '\n'
@@ -21,13 +21,13 @@ def run(text):
 
     @return     formatted line.
     """
-    lines = text.strip(NEW_LINE).split(NEW_LINE)
-    newtext = EMPTY_STRING
+    lines = text.strip(CONST.NEW_LINE).split(CONST.NEW_LINE)
+    newtext = CONST.EMPTY_STRING
     for l in lines:
-        l = setup_me(l.strip(), OPEN_PARENTHESIS, CLOSE_PARENTHESIS)
-        l = setup_me(l.strip(), OPEN_CURLY_BRACKET, CLOSE_CURLY_BRACKET)
-        newtext += l + NEW_LINE
-    return newtext.strip(NEW_LINE)
+        l = setup_me(l.strip(), CONST.OPEN_PARENTHESIS, CONST.CLOSE_PARENTHESIS)
+        l = setup_me(l.strip(), CONST.OPEN_CURLY_BRACKET, CONST.CLOSE_CURLY_BRACKET)
+        newtext += l + CONST.NEW_LINE
+    return newtext.strip(CONST.NEW_LINE)
 
 def setup_me(line, open_bracket, close_bracket):
     if is_loops_and_conditionals(line):
@@ -48,7 +48,7 @@ def setup_me(line, open_bracket, close_bracket):
         )
     )
     if needs_format:
-        if bracket in {OPEN_PARENTHESIS, OPEN_CURLY_BRACKET}:
+        if bracket in {CONST.OPEN_PARENTHESIS, CONST.OPEN_CURLY_BRACKET}:
             return setup_line(line, indices, 1)
         else:
             return setup_line(line, indices, 0)
@@ -66,13 +66,13 @@ def setup_line(line, indices, salt):
     if len(indices) <= 0:
         return line
     length_of_line = len(line)
-    new_line = EMPTY_STRING
+    new_line = CONST.EMPTY_STRING
     start_index = 0
     for index in indices:
-        new_line += line[start_index : index + salt] + NEW_LINE
+        new_line += line[start_index : index + salt] + CONST.NEW_LINE
         start_index = index + salt
     new_line += line[start_index:]
-    return new_line.strip(NEW_LINE)
+    return new_line.strip(CONST.NEW_LINE)
 
 def check_is_formatted(line, open_bracket, close_bracket, diff_paren):
     """
@@ -88,9 +88,9 @@ def check_is_formatted(line, open_bracket, close_bracket, diff_paren):
     ):
         return (True, open_bracket)
     elif diff_paren < 0:
-        if line != OPEN_PARENTHESIS and line != close_bracket + SEMICOLON:
+        if line != CONST.OPEN_PARENTHESIS and line != close_bracket + CONST.SEMICOLON:
             return (True, close_bracket)
-    return (False, EMPTY_STRING)
+    return (False, CONST.EMPTY_STRING)
 
 def is_loops_and_conditionals(line):
     """
@@ -100,7 +100,7 @@ def is_loops_and_conditionals(line):
 
     @return     True if loops and conditionals, False otherwise.
     """
-    for val in LOOPS_AND_CONDITIONAL_SET:
+    for val in CONST.LOOPS_AND_CONDITIONAL_SET:
         if line.startswith(val):
             return True
     return False
@@ -120,7 +120,7 @@ def get_bracket_count_and_index_of_unmatched(line, open_bracket, close_bracket):
     index_stack = []
 
     for idx, char in enumerate(line):
-        if char == FREAKING_QUOTE:
+        if char == CONST.QUOTE:
             quote_flag = not quote_flag
         if quote_flag:
             continue
