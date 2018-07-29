@@ -329,5 +329,5 @@ regex_dict = OrderedDict([
     (r'\n *\|\| *| *\|\| *', process_double_or),                                            # || should have 1 space before and after.
     (r'__C\b', '__c'),                                                                      # case sensitive `__c`
     # IMP : this will work with indent_me only
-    (r'(.+)\}\)\;$|(.+)\)\;$', move_single_bracket_to_new_line),                            # ); and }); to a newline
+    #(r'(.+)\}\)\;$|(.+)\)\;$', move_single_bracket_to_new_line),                            # ); and }); to a newline
 ])

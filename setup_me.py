@@ -1,15 +1,6 @@
 # -*- coding: utf-8 -*-
 import Formatme.constant as CONST
 
-LOOPS_AND_CONDITIONAL_SET = {'if (', 'for (', 'while ('}
-NEW_LINE = '\n'
-FREAKING_QUOTE = '\''
-OPEN_PARENTHESIS = '('
-CLOSE_PARENTHESIS = ')'
-OPEN_CURLY_BRACKET = '{'
-CLOSE_CURLY_BRACKET = '}'
-EMPTY_STRING = ''
-SEMICOLON = ';'
 
 def run(text):
     """
@@ -23,15 +14,21 @@ def run(text):
     """
     lines = text.strip(CONST.NEW_LINE).split(CONST.NEW_LINE)
     newtext = CONST.EMPTY_STRING
+    conditional_start = False
     for l in lines:
-        l = setup_me(l.strip(), CONST.OPEN_PARENTHESIS, CONST.CLOSE_PARENTHESIS)
-        l = setup_me(l.strip(), CONST.OPEN_CURLY_BRACKET, CONST.CLOSE_CURLY_BRACKET)
+        l = l.strip()
+        # skip for multiline conditional and loops
+        if CONST.is_multiline_loops_and_conditionals(l):
+            conditional_start = True
+        elif conditional_start and l == CONST.OPEN_CURLY_BRACKET:
+            conditional_start = False
+        elif not conditional_start:
+            l = setup_me(l, CONST.OPEN_PARENTHESIS, CONST.CLOSE_PARENTHESIS)
+            l = setup_me(l, CONST.OPEN_CURLY_BRACKET, CONST.CLOSE_CURLY_BRACKET)
         newtext += l + CONST.NEW_LINE
     return newtext.strip(CONST.NEW_LINE)
 
 def setup_me(line, open_bracket, close_bracket):
-    if is_loops_and_conditionals(line):
-        return line
     open_paren_count, close_paren_count, indices = (
         get_bracket_count_and_index_of_unmatched(
             line,
@@ -91,19 +88,6 @@ def check_is_formatted(line, open_bracket, close_bracket, diff_paren):
         if line != CONST.OPEN_PARENTHESIS and line != close_bracket + CONST.SEMICOLON:
             return (True, close_bracket)
     return (False, CONST.EMPTY_STRING)
-
-def is_loops_and_conditionals(line):
-    """
-    @brief      Determines if loops and conditionals.
-
-    @param      line  The line
-
-    @return     True if loops and conditionals, False otherwise.
-    """
-    for val in CONST.LOOPS_AND_CONDITIONAL_SET:
-        if line.startswith(val):
-            return True
-    return False
 
 def get_bracket_count_and_index_of_unmatched(line, open_bracket, close_bracket):
     """
