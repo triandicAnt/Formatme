@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import Formatme.constant as CONST
+import Formatme.utils as UTILS
 import re
 
 """
@@ -59,7 +60,10 @@ def run(text):
             block_comment_flag = True
         elif line.endswith(CONST.COMMENT_END):
             block_comment_flag = False
-        if is_line_comment(line, block_comment_flag):
+        if CONST.is_line_comment(line, block_comment_flag):
+            indent = tab_space*tabs
+            if line.startswith('*'):
+                indent = tab_space*tabs + CONST.NEW_STRING
             newtext += indent + orig_line + CONST.NEW_LINE
             continue
         if len(line) == 0:
@@ -116,7 +120,7 @@ def run(text):
             or line[-1] == CONST.OPEN_CURLY_BRACKET
         ):
             if (
-                is_line_conditional_or_try_catch(line)
+                UTILS.is_line_conditional_or_try_catch(line)
                 # or line == CONST.OPEN_CURLY_BRACKET
             ):
                 tabs -= 1
@@ -141,9 +145,9 @@ def run(text):
             preety_print_line(line_number, tabs, 5)
 
         # multiline conditional start #9
-        elif CONST.is_multiline_loops_and_conditionals(line):
+        elif UTILS.is_multiline_loops_and_conditionals(line):
             open_paren, close_paren = (
-                CONST.get_bracket_count(
+                UTILS.get_bracket_count(
                     line,
                     CONST.OPEN_PARENTHESIS,
                     CONST.CLOSE_PARENTHESIS
@@ -161,7 +165,7 @@ def run(text):
         # multiline conditional end #10
         elif conditonal_flag:
             open_paren, close_paren = (
-                CONST.get_bracket_count(
+                UTILS.get_bracket_count(
                     line,
                     CONST.OPEN_PARENTHESIS,
                     CONST.CLOSE_PARENTHESIS
@@ -184,18 +188,20 @@ def run(text):
             not return_flag
             and not soql_flag
             and not start_soql_query(line)
-            and not is_character_in_quotes(line, CONST.SEMICOLON)
-            and not is_line_keywords(line)
+            and not UTILS.is_character_in_quotes(line, CONST.SEMICOLON)
+            and not UTILS.is_line_keywords(line)
         ):
             indent = tab_space*tabs
-            if CONST.SEMICOLON not in line:
-                if (
-                    not no_semicolon_flag
-                    and not open_bracket_flag
-                    and line[-1] != CONST.CLOSE_CURLY_BRACKET
-                ):
-                    no_semicolon_flag = True
-                    tabs += 1
+            if (
+                CONST.SEMICOLON not in line
+                and not no_semicolon_flag
+                and (
+                    line[-1] == CONST.QUOTE
+                    or line[-1] == CONST.PLUS
+                )
+            ):
+                no_semicolon_flag = True
+                tabs += 1
             elif no_semicolon_flag:
                 no_semicolon_flag = False
                 tabs -= 1
@@ -258,23 +264,6 @@ def run(text):
         print('\n🏇🔫🤖Indentation not done properly.🤖🔫🏇')
     return newtext
 
-def is_line_comment(line, block_comment_flag):
-    """
-    @brief      Determines if line comment.
-
-    @param      line                The line
-    @param      block_comment_flag  The block comment flag
-
-    @return     True if line comment, False otherwise.
-    """
-    return (
-        line.startswith('/*')
-        or line.startswith('*')
-        or line.endswith('*/')
-        or line.startswith('//')
-        or block_comment_flag
-    )
-
 def start_soql_query(line):
     """
     @brief      Starts a soql query.
@@ -296,22 +285,6 @@ def end_soql_query(line):
     r = re.compile(r'](.+)*;$')
     return r.search(line) != None
 
-def is_soql_end(line):
-    """
-    @brief      Determines if soql end.
-
-    @param      line  The line
-
-    @return     True if soql end, False otherwise.
-    """
-    if (
-        '])' in line
-        or '];' in line
-        or ')];' in line
-    ):
-        return True
-    return False
-
 def preety_print_line(line, tabs, index):
     """
     @brief      Preety prints line
@@ -329,72 +302,4 @@ def preety_print_line(line, tabs, index):
                 str(index),
             )
         )
-    )
-
-def is_line_keywords(line):
-    """
-    @brief      Determines if line keywords.
-
-    @param      line  The line
-
-    @return     True if line keywords, False otherwise.
-    """
-    line = line.strip().lower()
-    return (
-        line == 'override'
-        or line == '@override'
-        or line == '@istest'
-        or line == '@testsetup'
-        or line == '@testvisible'
-        or line == '@future(callout=true)'
-    )
-
-def is_character_in_quotes(line, char):
-    """
-    @brief      Determines if character in quotes.
-
-    @param      line  The line
-    @param      char  The character
-
-    @return     True if character in quotes, False otherwise.
-    """
-    stmt = re.search(r'\'(.+)\'', line)
-    if not stmt:
-        return False
-    return char in stmt.group(0)
-
-def is_line_data_structure(line):
-    """
-    @brief      Determines if line data structure.
-
-    @param      line  The line
-
-    @return     True if line data structure, False otherwise.
-    """
-    stmt = re.search(r'(.+)\{$', line)
-    if not stmt:
-        return False
-    data_strucrtures = {
-        'List',
-        'Set',
-        'Map',
-        'enum'
-    }
-    for ds in data_strucrtures:
-        if ds in stmt.group(0):
-            return True
-    return False
-
-def is_line_conditional_or_try_catch(line):
-    """
-    @brief      Determines if line conditional or try catch.
-
-    @param      line  The line
-
-    @return     True if line conditional or try catch, False otherwise.
-    """
-    return (
-        line.startswith('} else {')
-        or line.startswith('} else if (')
-        or line.startswith('} catch (')
     )

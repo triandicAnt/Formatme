@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import Formatme.constant as CONST
+import Formatme.utils as UTILS
 
 
 def run(text):
     """
     @brief      set up the line for formatting. If a line contains odd
-                number of `{`/'}' or `(`/`)`, it will be split into two
+                number of `{}' or `()`, it will be split into two
                 multiple lines.
 
     @param      line  The line
@@ -15,8 +16,20 @@ def run(text):
     lines = text.strip(CONST.NEW_LINE).split(CONST.NEW_LINE)
     newtext = CONST.EMPTY_STRING
     conditional_start = False
+    block_comment_flag = False
+
     for l in lines:
         l = l.strip()
+
+        # skip the commented lines
+        if l.startswith(CONST.COMMENT_START):
+            block_comment_flag = True
+        elif l.endswith(CONST.COMMENT_END):
+            block_comment_flag = False
+        if UTILS.is_line_comment(l, block_comment_flag):
+               newtext += l + CONST.NEW_LINE
+               continue
+
         # skip for multiline conditional and loops
         if CONST.is_multiline_loops_and_conditionals(l):
             conditional_start = True
