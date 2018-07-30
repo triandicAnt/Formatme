@@ -19,17 +19,17 @@ def run(text):
     block_comment_flag = False
 
     for l in lines:
-        l = l.strip()
-
+        orig_line = l
+        l = orig_line.strip()
         # skip the commented lines
         if l.startswith(CONST.COMMENT_START):
             block_comment_flag = True
         elif l.endswith(CONST.COMMENT_END):
             block_comment_flag = False
         if UTILS.is_line_comment(l, block_comment_flag):
-               newtext += l + CONST.NEW_LINE
+               newtext += orig_line + CONST.NEW_LINE
                continue
-
+        l = l.strip()
         # skip for multiline conditional and loops
         if CONST.is_multiline_loops_and_conditionals(l):
             conditional_start = True

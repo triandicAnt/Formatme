@@ -15,7 +15,7 @@ Different type of lines:
 8. Close bracket line.
 9. Multiline conditional start line.
 10. Multiline conditional end line.
-11. Rest of lines.
+11. Rest of lines including multiline string statements.
 """
 
 def run(text):
@@ -32,7 +32,8 @@ def run(text):
     diff = 0
     # for multiline conditional
     total_paren_count = 0
-    total_tabs_added = 0
+    total_conditional_tabs_added = 0
+    total_return_tabs_added = 0
 
     indent = CONST.EMPTY_STRING
     newtext = CONST.EMPTY_STRING
@@ -61,10 +62,11 @@ def run(text):
         elif line.endswith(CONST.COMMENT_END):
             block_comment_flag = False
         if CONST.is_line_comment(line, block_comment_flag):
-            indent = tab_space*tabs
-            if line.startswith('*'):
-                indent = tab_space*tabs + CONST.NEW_STRING
-            newtext += indent + orig_line + CONST.NEW_LINE
+            newtext += orig_line + CONST.NEW_LINE
+            #indent = tab_space*tabs
+            # if line.startswith('*'):
+            #     indent = tab_space*tabs + CONST.NEW_STRING
+            # newtext += indent + orig_line + CONST.NEW_LINE
             continue
         if len(line) == 0:
             newtext += CONST.NEW_LINE
@@ -84,10 +86,10 @@ def run(text):
 
         # soql end #4
         elif soql_end_flag:
-            indent = soql_end_indent
             soql_end_flag = False
             soql_end_indent = CONST.EMPTY_STRING
             soql_start_indent = CONST.EMPTY_STRING
+            indent = tab_space*tabs
 
         # default indent #3
         else:
@@ -97,22 +99,21 @@ def run(text):
         if CONST.RETURN in line and line[-1] != CONST.SEMICOLON:
             return_flag = True
             tabs += 1
+            total_return_tabs_added += 1
             preety_print_line(line_number, tabs, 2)
 
         # multiline return end #6
         elif return_flag and CONST.SEMICOLON in line:
-            tabs -= 1
+            tabs -= total_return_tabs_added
             if (
                 line.strip() == '));'
                 or line.strip() == ');'
                 or line.strip() == '});'
             ):
-                if return_paren_flag and len(line.strip()) > 2:
-                    tabs -= 1
-                    return_paren_flag = False
                 indent = tab_space*tabs
-            preety_print_line(line_number, tabs, 3)
             return_flag = False
+            total_return_tabs_added = 0
+            preety_print_line(line_number, tabs, 3)
 
         # opening bracket line #7
         elif (
@@ -128,6 +129,8 @@ def run(text):
             else:
                 indent = tab_space*tabs
             tabs += 1
+            if return_flag:
+                total_return_tabs_added += 1
             open_bracket_flag = True
             preety_print_line(line_number, tabs, 4)
 
@@ -135,10 +138,17 @@ def run(text):
         elif (
             line == CONST.CLOSE_PARENTHESIS + CONST.SEMICOLON
             or line == CONST.CLOSE_CURLY_BRACKET + CONST.SEMICOLON
-            or line == CONST.CLOSE_PARENTHESIS
-            or line == CONST.CLOSE_CURLY_BRACKET
+            or line.startswith(CONST.CLOSE_PARENTHESIS)
+            or line.startswith(CONST.CLOSE_CURLY_BRACKET)
         ):
             tabs -= 1
+            # if string line ends then decrease a tab
+            # as it was set earlier
+            if no_semicolon_flag:
+                tabs -= 1
+                no_semicolon_flag = False
+            if return_flag:
+                total_return_tabs_added -= 1
             indent = tab_space*tabs
             if line != CONST.CLOSE_PARENTHESIS:
                 open_bracket_flag = False
@@ -159,7 +169,7 @@ def run(text):
                 tabs -= 1
                 indent = tab_space*tabs
             tabs += 1
-            total_tabs_added += 1
+            total_conditional_tabs_added += 1
             preety_print_line(line_number, tabs, 6)
 
         # multiline conditional end #10
@@ -175,12 +185,12 @@ def run(text):
             diff = (open_paren - close_paren)
             if diff > 0:
                 tabs += 1
-                total_tabs_added += 1
+                total_conditional_tabs_added += 1
             elif diff < 0:
                 if total_paren_count == 0:
                     conditonal_flag = False
-                    tabs -= total_tabs_added
-                    total_tabs_added = 0
+                    tabs -= total_conditional_tabs_added
+                    total_conditional_tabs_added = 0
             preety_print_line(line_number, tabs, 7)
 
         # rest of the line #11
@@ -196,17 +206,22 @@ def run(text):
                 CONST.SEMICOLON not in line
                 and not no_semicolon_flag
                 and (
-                    line[-1] == CONST.QUOTE
-                    or line[-1] == CONST.PLUS
+                    line[-1] == CONST.PLUS # String
+                    or line[0] == CONST.PLUS # String
                 )
             ):
                 no_semicolon_flag = True
                 tabs += 1
-            elif no_semicolon_flag:
+                if line[0] == CONST.PLUS:
+                    indent = tab_space*tabs
+            elif no_semicolon_flag and CONST.SEMICOLON in line:
                 no_semicolon_flag = False
                 tabs -= 1
+            elif line[0] == CONST.PLUS and CONST.SEMICOLON in line:
+                indent = tab_space*(tabs+1)
             preety_print_line(line_number, tabs, 8)
         else:
+            #indent = tab_space*tabs
             print('🤷🤷‍♀️🤷‍🙄🙄🙄 {}'.format(str(line_number)))
 
         newline = indent + line.rstrip()
@@ -243,7 +258,7 @@ def run(text):
             soql_flag = False
             soql_end_flag = True
             new_len = len(indent)-diff
-            soql_end_indent = ' ' * new_len
+            soql_end_indent = CONST.NEW_STRING * new_len
 
         # Handle unindented lines
         if (

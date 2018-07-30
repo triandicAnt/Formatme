@@ -108,7 +108,7 @@ process single line if else
 def single_line_if_else(matchedobj):
     """
     SKIP|FAIL
-    skip if ; in in quotes
+    skip if ; is in quotes
     """
     if ";'" in matchedobj.group(0):
         return matchedobj.group(0)
@@ -277,7 +277,7 @@ def is_character_in_quotes(line, char):
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
     (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                              # single line if else statement should be in the next line.
-    (r'^\s*(if\s*\(|else)[^;{]+(;\')|^\s*(if\s*\(|else)[^;{]+(;)', single_line_if_else),              # single line if/else should be enclosed with curly braces
+    (r'^\s*(if\s*\(|else|for\s*\()[^;{]+(;\')|^\s*(if\s*\(|else|for\s*\()[^;{]+(;)', single_line_if_else),    # single line if/else should be enclosed with curly braces
     (r'if *\(', r'if ('),                                                                   # 1 space between `if (`
     (r'\} *else *\{', r'} else {'),                                                         # 1 space between `} else {`
     (r'\} *else *if *\(', r'} else if ('),                                                  # 1 space between `} else if (`
