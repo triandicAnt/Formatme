@@ -117,10 +117,17 @@ def single_line_if_else(matchedobj):
         stmts = matchedobj.group(0).split('\n')
         if not stmts[0]:
             del stmts[0]
-        return (stmts[0] + ' {'
+        conditional_statement = stmts[0] + ' {'
+        # handle the comment in the same line
+        if '//' in stmts[0]:
+            comment_splits = stmts[0].split('//')
+            conditional_statement = comment_splits[0].strip() + ' { //' + comment_splits[1]
+        return (
+            conditional_statement
             + '\n' + stmts[1]
             + '\n'
-            + get_leading_spaces(stmts[0]) + '}')
+            + get_leading_spaces(stmts[0]) + '}'
+        )
     return matchedobj.group(0)
 
 """
@@ -277,7 +284,7 @@ def is_character_in_quotes(line, char):
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
     (r'\s*(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                              # single line if else statement should be in the next line.
-    (r'^\s*(if\s*\(|else|for\s*\()[^;{]+(;\')|^\s*(if\s*\(|else|for\s*\()[^;{]+(;)', single_line_if_else),    # single line if/else should be enclosed with curly braces
+    (r'^\s*(if\s*\(|else|for\s*\()[^;{]+(;\')|^\s*(if\s*\(|else|for\s*\()[^;{]+(;)', single_line_if_else),    # single line if/else/for should be enclosed with curly braces
     (r'if *\(', r'if ('),                                                                   # 1 space between `if (`
     (r'\} *else *\{', r'} else {'),                                                         # 1 space between `} else {`
     (r'\} *else *if *\(', r'} else if ('),                                                  # 1 space between `} else if (`

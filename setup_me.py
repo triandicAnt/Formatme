@@ -29,12 +29,16 @@ def run(text):
         if UTILS.is_line_comment(l, block_comment_flag):
                newtext += orig_line + CONST.NEW_LINE
                continue
+
         l = l.strip()
+
         # skip for multiline conditional and loops
         if CONST.is_multiline_loops_and_conditionals(l):
             conditional_start = True
         elif conditional_start and l == CONST.OPEN_CURLY_BRACKET:
             conditional_start = False
+
+        # else setup me
         elif not conditional_start:
             l = setup_me(l, CONST.OPEN_PARENTHESIS, CONST.CLOSE_PARENTHESIS)
             l = setup_me(l, CONST.OPEN_CURLY_BRACKET, CONST.CLOSE_CURLY_BRACKET)

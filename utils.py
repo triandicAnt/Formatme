@@ -12,7 +12,10 @@ def is_multiline_loops_and_conditionals(line):
     @return     True if loops and conditionals, False otherwise.
     """
     for val in CONST.LOOPS_AND_CONDITIONAL_SET:
-        if line.startswith(val) and line[-1] != CONST.OPEN_CURLY_BRACKET:
+        conditional_line = line
+        if CONST.BLOCK_COMMENT in line:
+            conditional_line = line.split(CONST.BLOCK_COMMENT)[0].strip()
+        if conditional_line.startswith(val) and conditional_line[-1] != CONST.OPEN_CURLY_BRACKET:
             return True
     return False
 
@@ -90,6 +93,22 @@ def is_line_keywords(line):
         or line == '@future(callout=true)'
     )
 
+def is_line_has_open_bracket(line):
+    """
+    @brief      Determines if line has an open bracket.
+
+    @param      line  The line
+
+    @return     True if line has an open bracket, False otherwise.
+    """
+    conditional_line = line
+    if CONST.BLOCK_COMMENT in line:
+        conditional_line = line.split(CONST.BLOCK_COMMENT)[0].strip()
+    return (
+        conditional_line[-1] == CONST.OPEN_PARENTHESIS
+        or conditional_line[-1] == CONST.OPEN_CURLY_BRACKET
+    )
+
 def is_character_in_quotes(line, char):
     """
     @brief      Determines if character in quotes.
@@ -125,3 +144,44 @@ def is_line_data_structure(line):
         if ds in stmt.group(0):
             return True
     return False
+
+def start_soql_query(line):
+    """
+    @brief      Starts a soql query.
+
+    @param      line  The line
+
+    @return     { description_of_the_return_value }
+    """
+    return ': [' in line or '= [' in line or '([' in line
+
+def end_soql_query(line):
+    """
+    @brief      Ends a soql query.
+
+    @param      line  The line
+
+    @return     { description_of_the_return_value }
+    """
+    r = re.compile(r'](.+)*;$')
+    return r.search(line) != None
+
+def preety_print_line(line, tabs, index):
+    """
+    @brief      Preety prints line
+
+    @param      line   The line
+    @param      tabs   The tabs
+    @param      index  The index
+
+    """
+    print(
+        ('line {} tabs {}  -------> {}'
+            .format(
+                str(line),
+                str(tabs),
+                str(index),
+            )
+        )
+    )
+

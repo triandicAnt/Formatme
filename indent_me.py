@@ -75,10 +75,10 @@ def run(text):
         line_number = i + 1
 
         # soql in the same line #1
-        if start_soql_query(line) and end_soql_query(line):
+        if UTILS.start_soql_query(line) and UTILS.end_soql_query(line):
             indent = tab_space*tabs
             soql_flag = False
-            preety_print_line(line_number, tabs, 1)
+            UTILS.preety_print_line(line_number, tabs, 1)
 
         # soql start #2
         elif soql_flag:
@@ -100,7 +100,7 @@ def run(text):
             return_flag = True
             tabs += 1
             total_return_tabs_added += 1
-            preety_print_line(line_number, tabs, 2)
+            UTILS.preety_print_line(line_number, tabs, 2)
 
         # multiline return end #6
         elif return_flag and CONST.SEMICOLON in line:
@@ -113,46 +113,7 @@ def run(text):
                 indent = tab_space*tabs
             return_flag = False
             total_return_tabs_added = 0
-            preety_print_line(line_number, tabs, 3)
-
-        # opening bracket line #7
-        elif (
-            line[-1] == CONST.OPEN_PARENTHESIS
-            or line[-1] == CONST.OPEN_CURLY_BRACKET
-        ):
-            if (
-                UTILS.is_line_conditional_or_try_catch(line)
-                # or line == CONST.OPEN_CURLY_BRACKET
-            ):
-                tabs -= 1
-                indent = tab_space*tabs
-            else:
-                indent = tab_space*tabs
-            tabs += 1
-            if return_flag:
-                total_return_tabs_added += 1
-            open_bracket_flag = True
-            preety_print_line(line_number, tabs, 4)
-
-        # closing bracket line #8
-        elif (
-            line == CONST.CLOSE_PARENTHESIS + CONST.SEMICOLON
-            or line == CONST.CLOSE_CURLY_BRACKET + CONST.SEMICOLON
-            or line.startswith(CONST.CLOSE_PARENTHESIS)
-            or line.startswith(CONST.CLOSE_CURLY_BRACKET)
-        ):
-            tabs -= 1
-            # if string line ends then decrease a tab
-            # as it was set earlier
-            if no_semicolon_flag:
-                tabs -= 1
-                no_semicolon_flag = False
-            if return_flag:
-                total_return_tabs_added -= 1
-            indent = tab_space*tabs
-            if line != CONST.CLOSE_PARENTHESIS:
-                open_bracket_flag = False
-            preety_print_line(line_number, tabs, 5)
+            UTILS.preety_print_line(line_number, tabs, 3)
 
         # multiline conditional start #9
         elif UTILS.is_multiline_loops_and_conditionals(line):
@@ -170,7 +131,7 @@ def run(text):
                 indent = tab_space*tabs
             tabs += 1
             total_conditional_tabs_added += 1
-            preety_print_line(line_number, tabs, 6)
+            UTILS.preety_print_line(line_number, tabs, 4)
 
         # multiline conditional end #10
         elif conditonal_flag:
@@ -191,19 +152,56 @@ def run(text):
                     conditonal_flag = False
                     tabs -= total_conditional_tabs_added
                     total_conditional_tabs_added = 0
-            preety_print_line(line_number, tabs, 7)
+            UTILS.preety_print_line(line_number, tabs, 5)
+
+        # opening bracket line #7
+        elif UTILS.is_line_has_open_bracket(line):
+            if (
+                UTILS.is_line_conditional_or_try_catch(line)
+                # or line == CONST.OPEN_CURLY_BRACKET
+            ):
+                tabs -= 1
+                indent = tab_space*tabs
+            else:
+                indent = tab_space*tabs
+            tabs += 1
+            if return_flag:
+                total_return_tabs_added += 1
+            if line[-1] == CONST.OPEN_PARENTHESIS:
+                open_bracket_flag = True
+            UTILS.preety_print_line(line_number, tabs, 6)
+
+        # closing bracket line #8
+        elif (
+            line == CONST.CLOSE_PARENTHESIS + CONST.SEMICOLON
+            or line == CONST.CLOSE_CURLY_BRACKET + CONST.SEMICOLON
+            or line.startswith(CONST.CLOSE_PARENTHESIS)
+            or line.startswith(CONST.CLOSE_CURLY_BRACKET)
+        ):
+            tabs -= 1
+            # if string line ends then decrease a tab
+            # as it was set earlier
+            if no_semicolon_flag:
+                tabs -= 1
+                no_semicolon_flag = False
+            if return_flag:
+                total_return_tabs_added -= 1
+            indent = tab_space*tabs
+            # if line != CONST.CLOSE_PARENTHESIS:
+            open_bracket_flag = False
+            UTILS.preety_print_line(line_number, tabs, 7)
 
         # rest of the line #11
         elif (
             not return_flag
             and not soql_flag
-            and not start_soql_query(line)
+            and not UTILS.start_soql_query(line)
             and not UTILS.is_character_in_quotes(line, CONST.SEMICOLON)
             and not UTILS.is_line_keywords(line)
         ):
             indent = tab_space*tabs
             if (
-                CONST.SEMICOLON not in line
+                line[-1] != CONST.SEMICOLON
                 and not no_semicolon_flag
                 and (
                     line[-1] == CONST.PLUS # String
@@ -214,12 +212,15 @@ def run(text):
                 tabs += 1
                 if line[0] == CONST.PLUS:
                     indent = tab_space*tabs
-            elif no_semicolon_flag and CONST.SEMICOLON in line:
+            elif no_semicolon_flag and line[-1] == CONST.SEMICOLON:
                 no_semicolon_flag = False
                 tabs -= 1
-            elif line[0] == CONST.PLUS and CONST.SEMICOLON in line:
+            elif line[0] == CONST.PLUS and line[-1] == CONST.SEMICOLON:
                 indent = tab_space*(tabs+1)
-            preety_print_line(line_number, tabs, 8)
+            elif open_bracket_flag and line[-1] == CONST.SEMICOLON:
+                tabs -= 1
+                open_bracket_flag = False
+            UTILS.preety_print_line(line_number, tabs, 8)
         else:
             #indent = tab_space*tabs
             print('🤷🤷‍♀️🤷‍🙄🙄🙄 {}'.format(str(line_number)))
@@ -228,11 +229,11 @@ def run(text):
         newtext += newline  + CONST.NEW_LINE
 
         # if the soql ends in same line then don't set the flags
-        if start_soql_query(line) and end_soql_query(line):
+        if UTILS.start_soql_query(line) and UTILS.end_soql_query(line):
             continue
 
         # handle multiline soql line
-        if start_soql_query(newline):
+        if UTILS.start_soql_query(newline):
             # find the position in line
             square_bracket_index = 0
             soql_flag = True
@@ -267,7 +268,7 @@ def run(text):
             and tabs == 0
         ):
             print('😱😱😱😱😱😱😱😱😱😱')
-            preety_print_line(line_number, tabs, -1)
+            UTILS.preety_print_line(line_number, tabs, -1)
             print('👽👽👽👽👽👽👽👽👽👽')
             last_line_flag = True
 
@@ -278,43 +279,3 @@ def run(text):
     else:
         print('\n🏇🔫🤖Indentation not done properly.🤖🔫🏇')
     return newtext
-
-def start_soql_query(line):
-    """
-    @brief      Starts a soql query.
-
-    @param      line  The line
-
-    @return     { description_of_the_return_value }
-    """
-    return ': [' in line or '= [' in line or '([' in line
-
-def end_soql_query(line):
-    """
-    @brief      Ends a soql query.
-
-    @param      line  The line
-
-    @return     { description_of_the_return_value }
-    """
-    r = re.compile(r'](.+)*;$')
-    return r.search(line) != None
-
-def preety_print_line(line, tabs, index):
-    """
-    @brief      Preety prints line
-
-    @param      line   The line
-    @param      tabs   The tabs
-    @param      index  The index
-
-    """
-    print(
-        ('line {} tabs {}  -------> {}'
-            .format(
-                str(line),
-                str(tabs),
-                str(index),
-            )
-        )
-    )
