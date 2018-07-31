@@ -26,14 +26,16 @@ def run(text):
             block_comment_flag = True
         elif l.endswith(CONST.COMMENT_END):
             block_comment_flag = False
-        if UTILS.is_line_comment(l, block_comment_flag):
+        if (
+            UTILS.is_line_comment(l, block_comment_flag)
+            or l.startswith(CONST.RETURN)
+        ):
                newtext += orig_line + CONST.NEW_LINE
                continue
-
         l = l.strip()
 
         # skip for multiline conditional and loops
-        if CONST.is_multiline_loops_and_conditionals(l):
+        if UTILS.is_multiline_loops_and_conditionals(l):
             conditional_start = True
         elif conditional_start and l == CONST.OPEN_CURLY_BRACKET:
             conditional_start = False
@@ -43,7 +45,18 @@ def run(text):
             l = setup_me(l, CONST.OPEN_PARENTHESIS, CONST.CLOSE_PARENTHESIS)
             l = setup_me(l, CONST.OPEN_CURLY_BRACKET, CONST.CLOSE_CURLY_BRACKET)
         newtext += l + CONST.NEW_LINE
+    # handle single line parenthesis
+    newtext = cleanup_lines(newtext)
     return newtext.strip(CONST.NEW_LINE)
+
+def cleanup_lines(lines):
+    split_lines = lines.split(CONST.NEW_LINE)
+    for i, sub_line in enumerate(split_lines):
+        if i > 0 and sub_line.strip() in CONST.SINGLE_LINES:
+            split_lines[i-1] += CONST.NEW_STRING + sub_line
+            del(split_lines[i])
+    return CONST.NEW_LINE.join(split_lines)
+
 
 def setup_me(line, open_bracket, close_bracket):
     open_paren_count, close_paren_count, indices = (

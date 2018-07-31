@@ -318,7 +318,7 @@ regex_dict = OrderedDict([
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             # remove `== true` or `!= false`
     (r'(.+)==\s*false\s*(.+)|(.+)!=\s*true\s*(.+)', process_if_false),                      # convert `x == false|z != true ` to `!x`
     (r'(.+)\n *\) *\{$', pre_process_multiline_loop),                                       # Fix multiline loops that end with '){' on new line
-    (r'^ *(for\s*\(|if\s*\(|while\s*\()[^{}]+{$', process_multiline_loop),                                 # 1 newline between multiline forloop and `{`
+    (r'^ *(for\s*\(|if\s*\(|while\s*\(|} else if\s*\()[^{}]+{$', process_multiline_loop),                                 # 1 newline between multiline forloop and `{`
     (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                             # no newline between singline forloop and `{`
     (r'(?i)\bSELECT\b *' , r'select '),                                                     # lowercase soql keyword `select`
     (r'(?i)\bFROM\b *' , r'from '),                                                         # lowercase soql keyword `from`

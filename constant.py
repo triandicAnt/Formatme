@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 
-LOOPS_AND_CONDITIONAL_SET = {
-    'if (',
-    'for (',
-    'while (',
-    '} else if ('
-}
+
 NEW_LINE = '\n'
 QUOTE = '\''
 OPEN_PARENTHESIS = '('
@@ -23,3 +18,16 @@ ELSE_IF = '} else if ('
 PLUS = '+'
 STAR = '*'
 BLOCK_COMMENT = '//'
+
+LOOPS_AND_CONDITIONAL_SET = {
+    'if (',
+    'for (',
+    'while (',
+    '} else if (',
+}
+
+SINGLE_LINES = {
+    OPEN_PARENTHESIS,
+    '&& (',
+    '|| (',
+}
