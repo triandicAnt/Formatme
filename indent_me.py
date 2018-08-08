@@ -65,10 +65,6 @@ def run(text):
             block_comment_flag = False
         if UTILS.is_line_comment(line, block_comment_flag):
             newtext += orig_line + CONST.NEW_LINE
-            #indent = tab_space*tabs
-            # if line.startswith('*'):
-            #     indent = tab_space*tabs + CONST.NEW_STRING
-            # newtext += indent + orig_line + CONST.NEW_LINE
             continue
         if len(line) == 0:
             newtext += CONST.NEW_LINE
