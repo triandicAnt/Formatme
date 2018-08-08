@@ -57,7 +57,9 @@ def run(text):
         line = orig_line.strip()
 
         # handle comments
-        if line.startswith(CONST.COMMENT_START):
+        if line.startswith(CONST.COMMENT_START) and line.endswith(CONST.COMMENT_END):
+            block_comment_flag = False
+        elif line.startswith(CONST.COMMENT_START):
             block_comment_flag = True
         elif line.endswith(CONST.COMMENT_END):
             block_comment_flag = False
