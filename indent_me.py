@@ -152,6 +152,8 @@ def run(text):
                     conditonal_flag = False
                     tabs -= total_conditional_tabs_added
                     total_conditional_tabs_added = 0
+                    if not soql_flag:
+                        indent = tab_space*(tabs+1)
             UTILS.preety_print_line(line_number, tabs, 5)
 
         # opening bracket line #7

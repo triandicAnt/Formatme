@@ -176,7 +176,7 @@ def if_else_same_line(matchedobj):
     # First find the occurence of '('
     if not stmt:
         return
-    if is_character_in_quotes(stmt, 'else'):
+    if is_character_in_quotes(stmt, 'else') or "'" in stmt:
         return stmt
     leading_spaces = ' '*(len(stmt) - len(stmt.lstrip('\n*').lstrip(' ')))
     stmt = stmt.strip()
@@ -266,20 +266,11 @@ def move_single_bracket_to_new_line(matchedobj):
     #         return stmt[:-3] + '\n' + '});'
 
 def is_character_in_quotes(line, char):
-    stmt = re.search(r'\'(.+)\'', line)
-    # stmt1 = re.search(r'(.+)\'', line)
-    # stmt2 = re.search(r'\'(.+)', line)
-    if (
-        not stmt
-        # and not stmt1
-        # and not stmt2
-    ):
+    stmt = re.search(r'\'(.+?)\'', line)
+    if not stmt:
         return False
-    return (
-        (stmt and char in stmt.group(0))
-        # or (stmt1 and char in stmt1.group(0))
-        # or (stmt2 and char in stmt2.group(0))
-    )
+    return char in stmt.group(0)
+
 
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
