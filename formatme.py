@@ -3,7 +3,7 @@
 import sublime
 import sublime_plugin
 import Formatme.regexme as rm
-import Formatme.indentme as im
+# import Formatme.indentme as im
 import Formatme.setup_me as sm
 import Formatme.indent_me as ime
 
@@ -26,7 +26,7 @@ def process_whole_file(self, edit):
     region = sublime.Region(0, self.view.size())
     text = self.view.substr(region)
     text_bkp = text
-    text = format_me(text)
+    text = regex_me(text)
     text = setup_me(text)
     text = indent_me(text)
     # Replace the text only if it has been modified
@@ -38,17 +38,15 @@ def process_selection(self, edit):
     for region in self.view.sel():
         if not region.empty():
             text = self.view.substr(region)
-            text = format_me(text)
+            text = regex_me(text)
             replace_text(self, edit, region, text)
 
-def format_me(text):
+def regex_me(text):
     return rm.run(text)
 
 def indent_me(text):
     return ime.run(text)
-
-def indentme(text):
-    return im.run(text)
+    # return im.run(text)
 
 def setup_me(text):
     return sm.run(text)
