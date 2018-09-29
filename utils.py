@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import Formatme.constant as CONST
+import Formatme.regexme as regexme
 import re
 
+soql_flag = False
+comment_flag = False
 
 def is_multiline_loops_and_conditionals(line):
     """
@@ -43,22 +46,46 @@ def get_bracket_count(line, open_bracket, close_bracket):
             close_count += 1
     return (open_count, close_count)
 
-def is_line_comment(line, block_comment_flag):
+def is_line_comment(line):
     """
     @brief      Determines if line comment.
 
     @param      line                The line
-    @param      block_comment_flag  The block comment flag
 
     @return     True if line comment, False otherwise.
     """
+    global comment_flag
     return (
-        line.startswith(CONST.COMMENT_START)
-        or line.startswith(CONST.STAR)
-        or line.endswith(CONST.COMMENT_END)
+        comment_start(line)
+        or comment_end(line)
+        or star_comment(line)
         or line.startswith(CONST.BLOCK_COMMENT)
-        or block_comment_flag
+        or comment_flag
     )
+
+def comment_start(line):
+    global comment_flag
+    if line.startswith(CONST.COMMENT_START) and line.endswith(CONST.COMMENT_END):
+        comment_flag = False
+        return True
+    if line.startswith(CONST.COMMENT_START):
+        comment_flag = True
+        return True
+    return False
+
+def comment_end(line):
+    global comment_flag
+    if line.endswith(CONST.COMMENT_END) and comment_flag:
+        comment_flag = False
+        return True
+    return False
+
+def star_comment(line):
+    global comment_flag
+    if line.startswith(CONST.STAR) and comment_flag:
+        return True
+    return False
+
 
 def is_line_conditional_or_try_catch(line):
     """
@@ -72,6 +99,7 @@ def is_line_conditional_or_try_catch(line):
         line.startswith('} else {')
         or line.startswith('} else if (')
         or line.startswith('} catch (')
+        or line.startswith('} finally {')
     )
 
 
@@ -153,7 +181,30 @@ def start_soql_query(line):
 
     @return     { description_of_the_return_value }
     """
+    global soql_flag
+    soql_flag = True
+    if (
+        regexme.is_character_in_quotes(line, ': [')
+        or regexme.is_character_in_quotes(line, '= [')
+        or regexme.is_character_in_quotes(line, '([')
+    ):
+        return False
     return ': [' in line or '= [' in line or '([' in line
+
+def soql_in_same_line(line):
+    global soql_flag
+    if start_soql_query(line):
+        open_paren_count, close_paren_count, indices = (
+            get_bracket_count_and_index_of_unmatched(
+                line,
+                '[',
+                ']'
+            )
+        )
+        if open_paren_count-close_paren_count == 0:
+            soql_flag = False
+            return True
+    return False
 
 def end_soql_query(line):
     """
@@ -163,8 +214,38 @@ def end_soql_query(line):
 
     @return     { description_of_the_return_value }
     """
-    r = re.compile(r'](.+)*;$')
-    return r.search(line) != None
+    global soql_flag
+    end_flag = (
+        soql_flag and (
+            '])' in line
+            or '];' in line
+            or ')];' in line
+            or '].' in line
+        )
+    )
+    if end_flag:
+        soql_flag = False
+    return end_flag
+
+def is_operator_start(line):
+    if (
+        line.startswith('+')
+        or line.startswith('-')
+        or line.startswith('/')
+        or line.startswith('*')
+    ):
+        return True
+    return False
+
+def is_operator_end(line):
+    if (
+        line.endswith('+')
+        or line.endswith('-')
+        or line.endswith('/')
+        or line.endswith('*')
+    ):
+        return True
+    return False
 
 def preety_print_line(line, tabs, index):
     """
@@ -185,3 +266,34 @@ def preety_print_line(line, tabs, index):
         )
     )
 
+def get_bracket_count_and_index_of_unmatched(line, open_bracket, close_bracket):
+    """
+    @brief      Gets the parenthesis count and the indices of unmatched brackets.
+
+    @param      line  The line
+
+    @return     The parenthesis count.
+    """
+    open_count = 0
+    close_count = 0
+    temp_open_count = 0
+    quote_flag = False
+    index_stack = []
+
+    for idx, char in enumerate(line):
+        if char == CONST.QUOTE:
+            quote_flag = not quote_flag
+        if quote_flag:
+            continue
+        elif char == open_bracket:
+            index_stack.append(idx)
+            open_count += 1
+            temp_open_count += 1
+        elif char == close_bracket:
+            close_count += 1
+            if temp_open_count <= 0:
+                index_stack.append(idx)
+            else:
+                index_stack.pop()
+            temp_open_count -= 1
+    return (open_count, close_count, index_stack)

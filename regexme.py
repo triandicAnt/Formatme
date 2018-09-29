@@ -122,9 +122,10 @@ def single_line_if_else(matchedobj):
         if '//' in stmts[0]:
             comment_splits = stmts[0].split('//')
             conditional_statement = comment_splits[0].strip() + ' { //' + comment_splits[1]
+        rest = '\n'.join(stmts[1:])
         return (
             conditional_statement
-            + '\n' + stmts[1]
+            + '\n' + rest
             + '\n'
             + get_leading_spaces(stmts[0]) + '}'
         )
@@ -142,7 +143,8 @@ those matches and process the rest.
 """
 def process_equals(matchedobj):
     stmt = matchedobj.group(0)
-    if "'=" in stmt:
+    # is_character_in_quotes(stmt, 'else') or "'" in stmt
+    if "'" in stmt:
         return stmt
     if stmt:
         if '//' in stmt or '/*' in stmt:
@@ -176,7 +178,7 @@ def if_else_same_line(matchedobj):
     # First find the occurence of '('
     if not stmt:
         return
-    if is_character_in_quotes(stmt, 'else') or "'" in stmt:
+    if is_character_in_quotes(stmt, 'else') or "else'" in stmt:
         return stmt
     leading_spaces = ' '*(len(stmt) - len(stmt.lstrip('\n*').lstrip(' ')))
     stmt = stmt.strip()
@@ -249,7 +251,7 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'),                                                                    # 1 space between `) {`
     #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                                     # 1 space after `, `
     (r', *\n', r', \n'),                                                                    # no trailing space after `, `
-    (r'\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),                      # 1 space around ` = `
+    #(r'\'(.+?)\'|\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),            # 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                         # ` == `
     # (r' *\+ *', r' + '),                                                                  # `+`    # broken example: '10+'
     # (r' *\- *', r' - '),                                                                  # `-`    # broken example: 'Pre-Sale'

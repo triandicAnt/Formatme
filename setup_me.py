@@ -16,22 +16,27 @@ def run(text):
     lines = text.strip(CONST.NEW_LINE).split(CONST.NEW_LINE)
     newtext = CONST.EMPTY_STRING
     conditional_start = False
-    block_comment_flag = False
-
+    soql_flag = False
+    line_number = 1
     for l in lines:
         orig_line = l
         l = orig_line.strip()
-        # skip the commented lines
-        if l.startswith(CONST.COMMENT_START):
-            block_comment_flag = True
-        elif l.endswith(CONST.COMMENT_END):
-            block_comment_flag = False
-        if (
-            UTILS.is_line_comment(l, block_comment_flag)
-            or l.startswith(CONST.RETURN)
-        ):
-               newtext += orig_line + CONST.NEW_LINE
-               continue
+        # skip the commented lines and retuen statements
+        if UTILS.is_line_comment(l) or l.startswith(CONST.RETURN):
+           newtext += orig_line + CONST.NEW_LINE
+           continue
+        # skip the soql lines
+        if UTILS.soql_in_same_line(l):
+            soql_flag = False
+        elif UTILS.start_soql_query(l):
+            soql_flag = True
+        elif UTILS.end_soql_query(l):
+            soql_flag = False
+            newtext += orig_line + CONST.NEW_LINE
+            continue
+        elif soql_flag:
+            newtext += orig_line + CONST.NEW_LINE
+            continue
         l = l.strip()
 
         # skip for multiline conditional and loops
@@ -45,6 +50,7 @@ def run(text):
             l = setup_me(l, CONST.OPEN_PARENTHESIS, CONST.CLOSE_PARENTHESIS)
             l = setup_me(l, CONST.OPEN_CURLY_BRACKET, CONST.CLOSE_CURLY_BRACKET)
         newtext += l + CONST.NEW_LINE
+        line_number += 1
     # handle single line parenthesis
     newtext = cleanup_lines(newtext)
     return newtext.strip(CONST.NEW_LINE)
@@ -60,7 +66,7 @@ def cleanup_lines(lines):
 
 def setup_me(line, open_bracket, close_bracket):
     open_paren_count, close_paren_count, indices = (
-        get_bracket_count_and_index_of_unmatched(
+        UTILS.get_bracket_count_and_index_of_unmatched(
             line,
             open_bracket,
             close_bracket
@@ -118,35 +124,3 @@ def check_is_formatted(line, open_bracket, close_bracket, diff_paren):
         if line != CONST.OPEN_PARENTHESIS and line != close_bracket + CONST.SEMICOLON:
             return (True, close_bracket)
     return (False, CONST.EMPTY_STRING)
-
-def get_bracket_count_and_index_of_unmatched(line, open_bracket, close_bracket):
-    """
-    @brief      Gets the parenthesis count and the indices of unmatched brackets.
-
-    @param      line  The line
-
-    @return     The parenthesis count.
-    """
-    open_count = 0
-    close_count = 0
-    temp_open_count = 0
-    quote_flag = False
-    index_stack = []
-
-    for idx, char in enumerate(line):
-        if char == CONST.QUOTE:
-            quote_flag = not quote_flag
-        if quote_flag:
-            continue
-        elif char == open_bracket:
-            index_stack.append(idx)
-            open_count += 1
-            temp_open_count += 1
-        elif char == close_bracket:
-            close_count += 1
-            if temp_open_count <= 0:
-                index_stack.append(idx)
-            else:
-                index_stack.pop()
-            temp_open_count -= 1
-    return (open_count, close_count, index_stack)
