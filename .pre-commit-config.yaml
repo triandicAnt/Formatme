@@ -1,0 +1,6 @@
+-   id: pre-commit-regex-me
+    name: Regex Expressions
+    language: python
+    description: Solve some formatting issues by regex
+    entry: pre-commit-regex-me
+    files: \.cls$
