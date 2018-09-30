@@ -1,6 +1,9 @@
--   id: pre-commit-regex-me
-    name: Regex Expressions
-    language: python
-    description: Solve some formatting issues by regex
-    entry: pre-commit-regex-me
-    files: \.cls$
+repos:
+-   repo: local
+    hooks:
+    -   id: pre_commit_regex_me
+        name: Regex Expressions
+        language: python
+        description: Solve some formatting issues by regex
+        entry: python3 pre_commit_regex_me.py
+        files: \.cls$
