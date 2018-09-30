@@ -21,7 +21,7 @@ Files were modified by this hook. Additional output:
 Regex Expressions........................................................Passed
 ```
 
-###2. `pre_commit_indent_me`
+### 2. `pre_commit_indent_me`
 * Apply indentation formatting to all the files added and modified by the git.
 * Find all `untracked + modified` files by `git`.
 * Filter `non-apex` files.
