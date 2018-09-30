@@ -91,7 +91,7 @@ else{
 }
 """
 def format_if_else_same_line(matchedobj):
-    stmts = re.compile(r'\n*').split(matchedobj.group(0))
+    stmts = re.compile(r'\n+').split(matchedobj.group(0))
     if not stmts:
         return matchedobj.group(0)
     return '{0} {1}'.format(stmts[0],stmts[1].strip())
