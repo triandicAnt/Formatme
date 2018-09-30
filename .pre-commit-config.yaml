@@ -1,9 +1,17 @@
 repos:
 -   repo: local
     hooks:
+    # regular expression hook for formatting
     -   id: pre_commit_regex_me
         name: Regex Expressions
         language: python
         description: Solve some formatting issues by regex
         entry: python3 pre_commit_regex_me.py
+        files: \.cls$
+    # indentation hook
+    -   id: pre_commit_indent_me
+        name: Indentation
+        language: python
+        description: Indent code
+        entry: python3 pre_commit_indent_me.py
         files: \.cls$

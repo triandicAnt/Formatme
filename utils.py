@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import Formatme.constant as CONST
-import Formatme.regexme as regexme
+import constant as CONST
+import regexme as regexme
 import re
 
 soql_flag = False
@@ -256,15 +256,16 @@ def preety_print_line(line, tabs, index):
     @param      index  The index
 
     """
-    print(
-        ('line {} tabs {}  -------> {}'
-            .format(
-                str(line),
-                str(tabs),
-                str(index),
-            )
-        )
-    )
+    # print(
+    #     ('line {} tabs {}  -------> {}'
+    #         .format(
+    #             str(line),
+    #             str(tabs),
+    #             str(index),
+    #         )
+    #     )
+    # )
+    return
 
 def get_bracket_count_and_index_of_unmatched(line, open_bracket, close_bracket):
     """

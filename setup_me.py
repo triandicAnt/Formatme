@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import Formatme.constant as CONST
-import Formatme.utils as UTILS
+import constant as CONST
+import utils as UTILS
 
 
 def run(text):

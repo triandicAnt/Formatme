@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import Formatme.constant as CONST
-import Formatme.utils as UTILS
+import constant as CONST
+import utils as UTILS
 import re
 
 """
@@ -72,12 +72,10 @@ def run(text):
 
         # soql start #2
         elif soql_flag:
-            print('soql started')
             indent = soql_start_indent
 
         # soql end #4
         elif soql_end_flag:
-            print('soql ended')
             soql_end_flag = False
             soql_end_indent = CONST.EMPTY_STRING
             soql_start_indent = CONST.EMPTY_STRING
@@ -222,7 +220,8 @@ def run(text):
             UTILS.preety_print_line(line_number, tabs, 8)
         else:
             #indent = tab_space*tabs
-            print('🤷🤷‍♀️🤷‍🙄🙄🙄 {}'.format(str(line_number)))
+            # print('🤷🤷‍♀️🤷‍🙄🙄🙄 {}'.format(str(line_number)))
+            pass
 
         newline = indent + line.rstrip()
         newtext += newline  + CONST.NEW_LINE
@@ -266,9 +265,9 @@ def run(text):
             and not last_line_flag
             and tabs == 0
         ):
-            print('😱😱😱😱😱😱😱😱😱😱')
+            # print('😱😱😱😱😱😱😱😱😱😱')
             UTILS.preety_print_line(line_number, tabs, -1)
-            print('👽👽👽👽👽👽👽👽👽👽')
+            # print('👽👽👽👽👽👽👽👽👽👽')
             last_line_flag = True
 
     # remove the last '\n'
@@ -277,4 +276,4 @@ def run(text):
         print('\n🙀🐾If I fits, I sits🐾🐈')
     else:
         print('\n🏇🔫🤖Indentation not done properly.🤖🔫🏇')
-    return newtext
+    return newtext, tabs
