@@ -3,9 +3,31 @@
 import re
 from collections import OrderedDict
 
+comment_pattern = r'(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
+quote_pattern = r'([^\']+?)(\'.*?\'|$)'
+
 def run(text):
-    for key, value in regex_dict.items():
-        text = re.sub(key, value, text, flags=re.MULTILINE)
+    code_parts = re.split(comment_pattern, text)
+    # filter out none comments and do the regex formatting
+    code_parts = [x for x in code_parts if x is not None]
+    code_parts = [x for x in code_parts if x.strip() not in ('*', '\n', ' ')]
+    for i, code in enumerate(code_parts):
+        if not is_line_a_comment(code):
+            changed_code = code
+            # check for quotes
+            l = re.split(quote_pattern, changed_code)
+            l = [a for a in l if a != '']
+            for j, unquoted in enumerate(l):
+                new_code = unquoted
+                if not is_in_quotes(new_code):
+                    for key, value in regex_dict.items():
+                        new_code = re.sub(key, value, new_code, flags=re.MULTILINE)
+                if new_code != unquoted:
+                    l[j] = new_code
+            changed_code = ''.join([x for x in l if x not in (' ', '\n')])
+            if changed_code != code:
+                code_parts[i] = changed_code
+    text = ''.join([x for x in code_parts if x not in (' ', '\n')])
     # replace content in view while removing any trailing whitespaces.
     text = text.rstrip(' +');
     return text
@@ -22,9 +44,13 @@ def get_leading_spaces(statement):
 
 def is_line_a_comment(line):
     """Check if a line is a comment"""
-    l = line.strip()
-    return l.startswith('//') or l.startswith('/*') or l.endswith('*/') or l.startswith('*')
+    line = line.strip()
+    if line.startswith('/*') or line.startswith('//'):
+        return True
+    return False
 
+def is_in_quotes(code_part):
+    return code_part.strip().startswith("\'")
 
 ############ REGEX FORMATTING METHODS ############
 def process_singleline_loop(matchedobj):
@@ -251,7 +277,7 @@ regex_dict = OrderedDict([
     (r'\) *\{', r') {'),                                                                    # 1 space between `) {`
     #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                                     # 1 space after `, `
     (r', *\n', r', \n'),                                                                    # no trailing space after `, `
-    #(r'\'(.+?)\'|\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),            # 1 space around ` = `
+    (r'\'(.+?)\'|\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),            # 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                         # ` == `
     # (r' *\+ *', r' + '),                                                                  # `+`    # broken example: '10+'
     # (r' *\- *', r' - '),                                                                  # `-`    # broken example: 'Pre-Sale'
@@ -269,7 +295,7 @@ regex_dict = OrderedDict([
     (r' *\-\- *', r'--'),                                                                   # no space around `--`
     (r'\n{2,}', r'\n\n'),                                                                   # at most 2 newlines
     (r' *; *\n', r';\n'),                                                                   # no spaces around `;`
-    (r' +$', ''),                                                                           # no trailing whitespaces
+    # (r' +$', ''),                                                                           # no trailing whitespaces
     (r'(.+) (?i)testMethod (.+)', remove_test_method),                                      # replace `testMethod` with `@isTest`
     (r'(.+) class (.+) *{', class_name),                                                    # 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             # remove `== true` or `!= false`
