@@ -20,7 +20,7 @@ def run(text):
             for j, unquoted in enumerate(l):
                 new_code = unquoted
                 if not is_in_quotes(new_code):
-                    for key, value in regex_dict.items():
+                    for key, value in regex_quote_sensitive_dict.items():
                         new_code = re.sub(key, value, new_code, flags=re.MULTILINE)
                 if new_code != unquoted:
                     l[j] = new_code
@@ -28,6 +28,8 @@ def run(text):
             if changed_code != code:
                 code_parts[i] = changed_code
     text = ''.join([x for x in code_parts if x not in (' ', '\n')])
+    for key, value in regex_dict.items():
+        text = re.sub(key, value, text, flags=re.MULTILINE)
     # replace content in view while removing any trailing whitespaces.
     text = text.rstrip(' +');
     return text
@@ -261,41 +263,16 @@ def is_character_in_quotes(line, char):
         return False
     return char in stmt.group(0)
 
-
+# these are no quote sensitive
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
     (r' *(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                              # single line if else statement should be in the next line.
     (r'^ *(if\s*\(|else|for\s*\()[^;{]+(;\')|^ *(if\s*\(|else|for\s*\()[^;{]+(;)',
         single_line_if_else
     ),                                                                                      # single line if/else/for should be enclosed with curly braces
-    (r'if *\(', r'if ('),                                                                   # 1 space between `if (`
-    (r'\} *else *\{', r'} else {'),                                                         # 1 space between `} else {`
-    (r'\} *else *if *\(', r'} else if ('),                                                  # 1 space between `} else if (`
-    (r'for *\(', r'for ('),                                                                 # 1 space between `for (`
-    (r'while *\(', r'while ('),                                                             # 1 space between `while (`
-    (r'> *\{', r'> {'),                                                                     # 1 space between `> {`
-    (r'\) *\{', r') {'),                                                                    # 1 space between `) {`
-    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                                     # 1 space after `, `
-    (r', *\n', r', \n'),                                                                    # no trailing space after `, `
-    (r'\'(.+?)\'|\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),            # 1 space around ` = `
-    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                         # ` == `
-    # (r' *\+ *', r' + '),                                                                  # `+`    # broken example: '10+'
-    # (r' *\- *', r' - '),                                                                  # `-`    # broken example: 'Pre-Sale'
-    (r' *\+ *= *', r' += '),                                                                # ` += `
-    (r' *\- *= *', r' -= '),                                                                # ` -= `
-    (r' *\* *= *', r' *= '),                                                                # ` *= `
-    (r' *= *> *', r' => '),                                                                 # ` => `
-    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*| *\/ *= *', process_divide_equals),                    # ` /= `
-    (r' *\! *= *', r' != '),                                                                # ` != `
-    (r' *> *= *', r' >= '),                                                                 # ` >= `
-    (r' *< *= *', r' <= '),                                                                 # ` <= `
-    (r' *& *= *', r' &= '),                                                                 # ` &= `
-    (r' *\| *= *', ' |= '),                                                                 # ` |= `
-    (r' *\+\+ *', r'++'),                                                                   # no space around `++`
-    (r' *\-\- *', r'--'),                                                                   # no space around `--`
     (r'\n{2,}', r'\n\n'),                                                                   # at most 2 newlines
     (r' *; *\n', r';\n'),                                                                   # no spaces around `;`
-    # (r' +$', ''),                                                                           # no trailing whitespaces
+    # (r' +$', ''),                                                                         # no trailing whitespaces
     (r'(.+) (?i)testMethod (.+)', remove_test_method),                                      # replace `testMethod` with `@isTest`
     (r'(.+) class (.+) *{', class_name),                                                    # 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             # remove `== true` or `!= false`
@@ -315,7 +292,37 @@ regex_dict = OrderedDict([
     (r'}\n+\s*else', format_if_else_same_line),                                             # else/else if should start with closing } of if
     (r'try *\{', r'try {'),                                                                 # 1 space between `try {`
     (r'\} *catch *\(', r'} catch ('),                                                       # 1 space between `} catch (`
+    (r'__C\b', '__c'),                                                                      # case sensitive `__c`
+])
+
+# these are case sensitive
+regex_quote_sensitive_dict = OrderedDict([
+    (r'if *\(', r'if ('),                                                                   # 1 space between `if (`
+    (r'\} *else *\{', r'} else {'),                                                         # 1 space between `} else {`
+    (r'\} *else *if *\(', r'} else if ('),                                                  # 1 space between `} else if (`
+    (r'for *\(', r'for ('),                                                                 # 1 space between `for (`
+    (r'while *\(', r'while ('),                                                             # 1 space between `while (`
+    (r'> *\{', r'> {'),                                                                     # 1 space between `> {`
+    (r'\) *\{', r') {'),                                                                    # 1 space between `) {`
+    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                                     # 1 space after `, `
+    (r'( *\, *)', ', '),                                                           # 1 space after `, `
+    (r', *\n', r', \n'),                                                                    # no trailing space after `, `
+    (r'\'(.+?)\'|\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),            # 1 space around ` = `
+    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                         # ` == `
+    (r' *\+ *', r' + '),                                                                  # `+`    # broken example: '10+'
+    (r' *\- *', r' - '),                                                                  # `-`    # broken example: 'Pre-Sale'
+    (r' *\+ *= *', r' += '),                                                                # ` += `
+    (r' *\- *= *', r' -= '),                                                                # ` -= `
+    (r' *\* *= *', r' *= '),                                                                # ` *= `
+    (r' *= *> *', r' => '),                                                                 # ` => `
+    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*| *\/ *= *', process_divide_equals),                    # ` /= `
+    (r' *\! *= *', r' != '),                                                                # ` != `
+    (r' *> *= *', r' >= '),                                                                 # ` >= `
+    (r' *< *= *', r' <= '),                                                                 # ` <= `
+    (r' *& *= *', r' &= '),                                                                 # ` &= `
+    (r' *\| *= *', ' |= '),                                                                 # ` |= `
+    (r' *\+\+ *| *\+  \+ *', r'++'),                                                                   # no space around `++`
+    (r' *\-\- *', r'--'),                                                                   # no space around `--`
     (r'(\n *&& *| *&& *)', process_double_and),                                             # && should have 1 space before and after.
     (r'\n *\|\| *| *\|\| *', process_double_or),                                            # || should have 1 space before and after.
-    (r'__C\b', '__c'),                                                                      # case sensitive `__c`
 ])

@@ -72,12 +72,10 @@ def run(text):
 
         # soql start #2
         elif soql_flag:
-            print('soql started')
             indent = soql_start_indent
 
         # soql end #4
         elif soql_end_flag:
-            print('soql ended')
             soql_end_flag = False
             soql_end_indent = CONST.EMPTY_STRING
             soql_start_indent = CONST.EMPTY_STRING
@@ -152,8 +150,11 @@ def run(text):
         elif UTILS.is_line_has_open_bracket(line) and not soql_flag:
             if (
                 UTILS.is_line_conditional_or_try_catch(line)
-                #or line == CONST.OPEN_CURLY_BRACKET
             ):
+                tabs -= 1
+                indent = tab_space*tabs
+            elif line == CONST.CLOSE_PARENTHESIS + ' ' + CONST.OPEN_CURLY_BRACKET:
+                open_bracket_flag = False
                 tabs -= 1
                 indent = tab_space*tabs
             else:
