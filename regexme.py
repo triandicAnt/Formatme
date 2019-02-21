@@ -235,7 +235,6 @@ def if_else_same_line(matchedobj):
 
 """
 process &&
-SKIP|FAIL
 """
 def process_double_and(matchedobj):
     stmt = matchedobj.group(0)
@@ -247,7 +246,6 @@ def process_double_and(matchedobj):
 
 """
 process ||
-SKIP|FAIL
 """
 def process_double_or(matchedobj):
     stmt = matchedobj.group(0)
@@ -323,6 +321,6 @@ regex_quote_sensitive_dict = OrderedDict([
     (r' *\| *= *', ' |= '),                                                                 # ` |= `
     (r' *\+\+ *| *\+  \+ *', r'++'),                                                                   # no space around `++`
     (r' *\-\- *', r'--'),                                                                   # no space around `--`
-    (r'(\n *&& *| *&& *)', process_double_and),                                             # && should have 1 space before and after.
-    (r'\n *\|\| *| *\|\| *', process_double_or),                                            # || should have 1 space before and after.
+    (r'\s*&& *', process_double_and),                                                       # && should have 1 space before and after.
+    (r'\s*\|\| *', process_double_or),                                                      # || should have 1 space before and after.
 ])
