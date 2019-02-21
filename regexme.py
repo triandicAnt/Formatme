@@ -263,6 +263,25 @@ def is_character_in_quotes(line, char):
         return False
     return char in stmt.group(0)
 
+"""
+Process assertEquals(true, val);
+assert(val);
+Process assertEquals(false, val);
+assert(!val);
+"""
+def process_assert_equals(matchedobj):
+    stmt = matchedobj.group(0)
+    if not stmt:
+        return
+    val = matchedobj.group(1)
+    if val:
+        if 'true' in stmt:
+            return 'System.assert({};'.format(val)
+        elif 'false' in stmt:
+            return 'System.assert(!{};'.format(val)
+    return stmt
+
+
 # these are no quote sensitive
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
@@ -293,6 +312,8 @@ regex_dict = OrderedDict([
     (r'try *\{', r'try {'),                                                                 # 1 space between `try {`
     (r'\} *catch *\(', r'} catch ('),                                                       # 1 space between `} catch (`
     (r'__C\b', '__c'),                                                                      # case sensitive `__c`
+    (r'^\s*System\.assertEquals\(true\s*,\s*(.+);$', process_assert_equals),                # assert equals true
+    (r'^\s*System\.assertEquals\(false\s*,\s*(.+);$', process_assert_equals),               # assert equals true
 ])
 
 # these are case sensitive
@@ -321,7 +342,7 @@ regex_quote_sensitive_dict = OrderedDict([
     (r' *< *= *', r' <= '),                                                                 # ` <= `
     (r' *& *= *', r' &= '),                                                                 # ` &= `
     (r' *\| *= *', ' |= '),                                                                 # ` |= `
-    (r' *\+\+ *| *\+  \+ *', r'++'),                                                                   # no space around `++`
+    (r' *\+\+ *| *\+  \+ *', r'++'),                                                        # no space around `++`
     (r' *\-\- *', r'--'),                                                                   # no space around `--`
     (r'(\n *&& *| *&& *)', process_double_and),                                             # && should have 1 space before and after.
     (r'\n *\|\| *| *\|\| *', process_double_or),                                            # || should have 1 space before and after.
