@@ -148,7 +148,7 @@ process single line if else
         doSomethingElse
     }
 """
-def single_line_if_else(matchedobj):
+def add_brackets_to_multiline_if_else(matchedobj):
     """
     SKIP|FAIL
     skip if ; is in quotes
@@ -221,7 +221,7 @@ process Single line if/else statements.
         print(1)
     }
 """
-def if_else_same_line(matchedobj):
+def add_brackets_to_singleline_if_else(matchedobj):
     stmt = matchedobj.group(0)
     # find the closing bracket for the if/else.
     # First find the occurence of '('
@@ -298,14 +298,13 @@ def is_character_in_quotes(line, char):
 # these are no quote sensitive
 regex_dict = OrderedDict([
     ###### RULE #######                                                                     ###### DOCUMENTATION ######
-    (r' *(if\s*\(|else\s*if|else)(.+);$', if_else_same_line),                              # single line if else statement should be in the next line.
+    (r' *(if\s*\(|else\s*if|else)(.+);$', add_brackets_to_singleline_if_else),              # single line if/else statements should be multi-lined & enclosed with curly brackets
     (r'^ *(if\s*\(|else|for\s*\()[^;{]+(;\')|^ *(if\s*\(|else|for\s*\()[^;{]+(;)',
-        single_line_if_else
+        add_brackets_to_multiline_if_else
     ),                                                                                      # single line if/else/for should be enclosed with curly braces
     (r'\n{2,}', r'\n\n'),                                                                   # at most 2 newlines
     (r' *; *\n', r';\n'),                                                                   # no spaces around `;`
     # (r' +$', ''),                                                                         # no trailing whitespaces
-    (r'(.+) (?i)testMethod (.+)', remove_test_method),                                      # replace `testMethod` with `@isTest`
     (r'(.+) class (.+) *{', class_name),                                                    # 1 space between `SampleClass {`
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             # remove `== true` or `!= false`
     (r'(.+)==\s*false\s*(.+)|(.+)!=\s*true\s*(.+)', process_if_false),                      # convert `x == false|z != true ` to `!x`
@@ -325,6 +324,7 @@ regex_dict = OrderedDict([
     (r'try *\{', r'try {'),                                                                 # 1 space between `try {`
     (r'\} *catch *\(', r'} catch ('),                                                       # 1 space between `} catch (`
     (r'__C\b', '__c'),                                                                      # case sensitive `__c`
+    (r'__R\b', '__r'),                                                                      # case sensitive `__r`
 ])
 
 # these are case sensitive
@@ -339,6 +339,7 @@ regex_quote_sensitive_dict = OrderedDict([
     #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                                     # 1 space after `, `
     (r'( *\, *)', ', '),                                                           # 1 space after `, `
     (r', *\n', r', \n'),                                                                    # no trailing space after `, `
+    (r'(.+) (?i)testMethod (.+)', remove_test_method),                                      # replace `testMethod` with `@isTest`
     (r'\'(.+?)\'|\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),            # 1 space around ` = `
     (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                         # ` == `
     (r' *\+ *', r' + '),                                                                  # `+`    # broken example: '10+'
