@@ -111,12 +111,15 @@ def process_if_false_is_back(matchedobj):
 
 
 """
-if () {
-
-}
-else{
-
-}
+[Before]
+    }
+    else {
+        //
+    }
+[After]
+    } else {
+        //
+    }
 """
 def format_if_else_same_line(matchedobj):
     stmts = re.compile(r'\n*').split(matchedobj.group(0))
@@ -132,6 +135,18 @@ def process_comma(matchedobj):
 
 """
 process single line if else
+[Before]
+    if (true) // A
+        doSomething
+    else // B
+        doSomethingElse
+[After]
+    if (true) { // A
+        doSomething
+    }
+    else { // B
+        doSomethingElse
+    }
 """
 def single_line_if_else(matchedobj):
     """
@@ -146,7 +161,7 @@ def single_line_if_else(matchedobj):
         if not stmts[0]:
             del stmts[0]
         conditional_statement = stmts[0] + ' {'
-        # handle the comment in the same line
+        # handle the comment if there's a comment at the end of the same line
         if '//' in stmts[0]:
             comment_splits = stmts[0].split('//')
             conditional_statement = comment_splits[0].strip() + ' { //' + comment_splits[1]
@@ -195,10 +210,16 @@ def process_divide_equals(matchedobj):
 
 """
 process Single line if/else statements.
-if (sth() && nothing()) return;
-
-if (sth() && nothing())
-    return;
+[Before]
+    if (sth() && nothing()) return;
+    else print(1);
+[After]
+    if (sth() && nothing()) {
+        return;
+    }
+    else {
+        print(1)
+    }
 """
 def if_else_same_line(matchedobj):
     stmt = matchedobj.group(0)
