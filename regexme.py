@@ -244,13 +244,26 @@ def if_else_same_line(matchedobj):
                 count = count - 1
                 if count == 0:
                     break
-        return '\n{0}{1}\n{2}{3}'.format(leading_spaces, stmt[:parenthesis_index + index_count + 1],\
-            '{0}{1}'.format(leading_spaces, ' ' * 4),stmt[parenthesis_index + index_count +1:].strip())
+        return '{0}{1}{2}\n{3}{4}\n{5}'.format(
+            leading_spaces,
+            stmt[:parenthesis_index + index_count + 1],
+            '{',
+            leading_spaces + ' ' * 4,
+            stmt[parenthesis_index + index_count +1:].strip(),
+            leading_spaces + '}'
+        )
     elif 'else' in stmt:
         # handle the else case
         stmts = stmt.split(' ')
         return_stmt = " ".join(stmts[1:])
-        return '\n{0}{1}\n{2}{3}'.format(leading_spaces, stmts[0],'{0}{1}'.format(leading_spaces, ' ' * 4),return_stmt.strip())
+        return '{0}{1}{2}\n{3}{4}\n{5}'.format(
+            leading_spaces,
+            stmts[0],
+            ' {',
+            leading_spaces + ' ' * 4,
+            return_stmt.strip(),
+            leading_spaces + '}'
+        )
     else:
         return stmt
 
