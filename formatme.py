@@ -27,8 +27,8 @@ def process_whole_file(self, edit):
     text = self.view.substr(region)
     text_bkp = text
     text = regex_me(text)
-    text = setup_me(text)
-    text = indent_me(text)
+    # text = setup_me(text)
+    # text = indent_me(text)
     # Replace the text only if it has been modified
     if text != text_bkp:
         replace_text(self, edit, region, text)
