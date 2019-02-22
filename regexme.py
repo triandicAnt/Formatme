@@ -305,12 +305,13 @@ def process_assert_equals(matchedobj):
     stmt = matchedobj.group(0)
     if not stmt:
         return
-    val = matchedobj.group(1)
+    val = matchedobj.group(2)
     if val:
+        leading_space = get_leading_spaces(stmt)
         if 'true' in stmt:
-            return 'System.assert({};'.format(val)
+            return leading_space + 'System.assert({};'.format(val)
         elif 'false' in stmt:
-            return 'System.assert(!{};'.format(val)
+            return leading_space + 'System.assert(!{};'.format(val)
     return stmt
 
 
@@ -343,8 +344,7 @@ regex_dict = OrderedDict([
     (r'try *\{', r'try {'),                                                                 # 1 space between `try {`
     (r'\} *catch *\(', r'} catch ('),                                                       # 1 space between `} catch (`
     (r'__C\b', '__c'),                                                                      # case sensitive `__c`
-    (r'^\s*System\.assertEquals\(true\s*,\s*(.+);$', process_assert_equals),                # assert equals true
-    (r'^\s*System\.assertEquals\(false\s*,\s*(.+);$', process_assert_equals),               # assert equals true
+    (r'^\s*System\.assertEquals\((true|false)\s*,\s*(.+);$', process_assert_equals),        # assert equals true/false
     (r'__R\b', '__r'),                                                                      # case sensitive `__r`
 ])
 
