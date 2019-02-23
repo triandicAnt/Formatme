@@ -17,16 +17,16 @@ class FormatmeCommand(sublime_plugin.TextCommand):
         if not file_name or not file_name.endswith('.cls'):
             return
         if process_all:
-            process_whole_file(self, edit) # format the entire file
+            process_whole_file(self, edit, file_name.split('/')[-1]) # format the entire file
         else:
             process_selection(self, edit) # format only the selected text
 
-def process_whole_file(self, edit):
+def process_whole_file(self, edit, file_name):
     # select all text
     region = sublime.Region(0, self.view.size())
     text = self.view.substr(region)
     text_bkp = text
-    text = regex_me(text)
+    text = regex_me(text, file_name)
     # text = setup_me(text)
     # text = indent_me(text)
     # Replace the text only if it has been modified
@@ -41,8 +41,8 @@ def process_selection(self, edit):
             text = regex_me(text)
             replace_text(self, edit, region, text)
 
-def regex_me(text):
-    return rm.run(text)
+def regex_me(text, file_name):
+    return rm.run(text, file_name)
 
 def indent_me(text):
     return ime.run(text)

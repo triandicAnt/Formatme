@@ -6,11 +6,12 @@ from collections import OrderedDict
 comment_pattern = r'(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
 quote_pattern = r'([^\']+?)(\'.*?\'|$)'
 
-def run(text):
+def run(text, filename):
     code_parts = re.split(comment_pattern, text)
     # filter out none comments and do the regex formatting
     code_parts = [x for x in code_parts if x is not None]
     code_parts = [x for x in code_parts if x.strip() not in ('*', '\n', ' ')]
+    messages = set()
     for i, code in enumerate(code_parts):
         if not is_line_a_comment(code):
             changed_code = code
@@ -20,21 +21,33 @@ def run(text):
             for j, unquoted in enumerate(l):
                 new_code = unquoted
                 if not is_in_quotes(new_code):
-                    for key, value in regex_quote_sensitive_dict.items():
-                        new_code = re.sub(key, value, new_code, flags=re.MULTILINE)
+                    for (key, value, message) in regex_quote_sensitive_list:
+                        new_code_temp = re.sub(key, value, new_code, flags=re.MULTILINE)
+                        if new_code_temp != new_code:
+                            messages.add(message)
+                        new_code = new_code_temp
                 if new_code != unquoted:
                     l[j] = new_code
             changed_code = ''.join([x for x in l if x not in (' ', '\n')])
             if changed_code != code:
                 code_parts[i] = changed_code
     text = ''.join([x for x in code_parts if x not in (' ', '\n')])
-    for key, value in regex_dict.items():
-        text = re.sub(key, value, text, flags=re.MULTILINE)
+    for (key, value, message) in quote_insensitive_list:
+        new_text = re.sub(key, value, text, flags=re.MULTILINE)
+        if text != new_text:
+            text = new_text
+            messages.add(message)
     # replace content in view while removing any trailing whitespaces.
     text = text.rstrip(' +');
+    # print all the rules that were detected and modified
+    if len(messages) > 0:
+        print(filename + ": is modified by Regex Expression")
+        for x in messages:
+            print(x)
     return text
 
 ############ HELPER METHODS ############
+
 def get_leading_spaces(statement):
     """Get the number of leading spaces in a line"""
     leading_space_count = len(statement) - len(statement.lstrip(' '))
@@ -59,16 +72,12 @@ def process_singleline_loop(matchedobj):
     """Single line loops should have `{` on the same line"""
     return matchedobj.group(0).split('\n')[0] + ' {'
 
-def pre_process_multiline_loop(matchedobj):
-    """Multi line loops should end with `)` and have `{` on a new line"""
-    x = matchedobj.group(0).split('\n')
-    leading_spaces = get_leading_spaces(x[1])
-    return x[0] + ')\n' + leading_spaces + '{'
-
 def process_multiline_loop(matchedobj):
     """Multi line loops should have `{` on a separate new line"""
-    stmt = matchedobj.group(0).strip('\n+')
-    return stmt[:-1].strip('\n+').rstrip(' +').rstrip('\n+')+'\n' + get_leading_spaces(stmt) + '{'
+    if "\n" in matchedobj.group(0):
+        stmt = matchedobj.group(0).strip('\n+')
+        return stmt[:-1].strip('\n+').rstrip(' +').rstrip('\n+')+'\n' + get_leading_spaces(stmt) + '{'
+    return matchedobj.group(0)
 
 def remove_test_method(matchedobj):
     """Replace `private testMethod` keyword with `@isTest` annotation"""
@@ -114,12 +123,8 @@ def process_if_false_is_back(matchedobj):
 [Before]
     }
     else {
-        //
-    }
 [After]
     } else {
-        //
-    }
 """
 def format_if_else_same_line(matchedobj):
     stmts = re.compile(r'\n*').split(matchedobj.group(0))
@@ -212,13 +217,13 @@ def process_divide_equals(matchedobj):
 process Single line if/else statements.
 [Before]
     if (sth() && nothing()) return;
-    else print(1);
+    else 1
 [After]
     if (sth() && nothing()) {
         return;
     }
     else {
-        print(1)
+        1
     }
 """
 def add_brackets_to_singleline_if_else(matchedobj):
@@ -305,78 +310,118 @@ def process_assert_equals(matchedobj):
     stmt = matchedobj.group(0)
     if not stmt:
         return
-    val = matchedobj.group(2)
+    val = matchedobj.group(1)
     if val:
-        leading_space = get_leading_spaces(stmt)
         if 'true' in stmt:
-            return leading_space + 'System.assert({};'.format(val)
+            return 'System.assert({};'.format(val)
         elif 'false' in stmt:
-            return leading_space + 'System.assert(!{};'.format(val)
+            return 'System.assert(!{};'.format(val)
     return stmt
 
 
+def at_most_2_new_lines(matchedobj):
+    return '\n\n'
+
+def no_space_around_semicolon(matchedobj):
+    return r';\n'
+
+def lowercase_select(matchedobj):
+    return r'select '
+
+def lowercase_from(matchedobj):
+    return r'from '
+
+def lowercase_where(matchedobj):
+    return r'where '
+
+def lowercase_limit(matchedobj):
+    return r'limit '
+
+def lowercase_group_by(matchedobj):
+    return r'group by '
+
+def lowercase_order_by(matchedobj):
+    return r'order by '
+
+def lowercase_having(matchedobj):
+    return r'having '
+
+def get_set_property(matchedobj):
+    return '{get; set;}'
+
+def try_condition(matchedobj):
+    return r'try {'
+
+def catch_condition(matchedobj):
+    return r'} catch ('
+
+def custom_field_rule(matchedobj):
+    return '__c'
+
+def custom_relation_rule(matchedobj):
+    return '__r'
+
+def if_condition_single_space(matchedobj):
+    return r'if ('
+
+def else_condition_single_space(matchedobj):
+    return r'} else {'
+
+def else_if_condition_single_space(matchedobj):
+    return r'} else if ('
+
+def for_condition_single_space(matchedobj):
+    return r'for ('
+
+def while_condition_single_space(matchedobj):
+    return r'while ('
+
+def angle_and_curly_condition_single_space(matchedobj):
+    return r'> {'
+
+def parenthesis_and_curly_condition_single_space(matchedobj):
+    return r') {'
+
 # these are no quote sensitive
-regex_dict = OrderedDict([
-    ###### RULE #######                                                                     ###### DOCUMENTATION ######
-    (r' *(if\s*\(|else\s*if|else)(.+);$', add_brackets_to_singleline_if_else),              # single line if/else statements should be multi-lined & enclosed with curly brackets
-    (r'^ *(if\s*\(|else|for\s*\()[^;{]+(;\')|^ *(if\s*\(|else|for\s*\()[^;{]+(;)',
-        add_brackets_to_multiline_if_else
-    ),                                                                                      # single line if/else/for should be enclosed with curly braces
-    (r'\n{2,}', r'\n\n'),                                                                   # at most 2 newlines
-    (r' *; *\n', r';\n'),                                                                   # no spaces around `;`
-    # (r' +$', ''),                                                                         # no trailing whitespaces
-    (r'(.+) class (.+) *{', class_name),                                                    # 1 space between `SampleClass {`
-    (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true),                             # remove `== true` or `!= false`
-    (r'(.+)==\s*false\s*(.+)|(.+)!=\s*true\s*(.+)', process_if_false),                      # convert `x == false|z != true ` to `!x`
-    (r'(.+)\n *\) *\{$', pre_process_multiline_loop),                                       # Fix multiline loops that end with '){' on new line
-    (r'^ *(for\s*\(|if\s*\(|while\s*\(|} else if\s*\()[^{}]+{$', process_multiline_loop),   # 1 newline between multiline forloop and `{`
-    (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop),                             # no newline between singline forloop and `{`
-    (r'(?i)\bSELECT\b *' , r'select '),                                                     # lowercase soql keyword `select`
-    (r'(?i)\bFROM\b *' , r'from '),                                                         # lowercase soql keyword `from`
-    (r'(?i)\bWHERE\b *' , r'where '),                                                       # lowercase soql keyword `where`
-    (r'(?i)\bLIMIT\b *' , r'limit '),                                                       # lowercase soql keyword `limit`
-    (r'(?i)\bGROUP BY\b *' , r'group by '),                                                 # lowercase soql keyword `group by`
-    (r'(?i)\bORDER BY\b *' , r'order by '),                                                 # lowercase soql keyword `order by`
-    (r'(?i)\bHAVING\b *' , r'having '),                                                     # lowercase soql keyword `having`
-    (r'\n{2}\s*}', remove_trailing_newline),                                                # remove trailing newline at end of functions
-    (r'({\s*get;\s*set;\s*})','{get; set;}'),                                               # get/set for class variables
-    (r'}\n+\s*else', format_if_else_same_line),                                             # else/else if should start with closing } of if
-    (r'try *\{', r'try {'),                                                                 # 1 space between `try {`
-    (r'\} *catch *\(', r'} catch ('),                                                       # 1 space between `} catch (`
-    (r'__C\b', '__c'),                                                                      # case sensitive `__c`
-    (r'^\s*System\.assertEquals\((true|false)\s*,\s*(.+);$', process_assert_equals),        # assert equals true/false
-    (r'__R\b', '__r'),                                                                      # case sensitive `__r`
-])
+quote_insensitive_list = [
+    ###### RULE #######
+    (r' *(if\s*\(|else\s*if|else)(.+);$', add_brackets_to_singleline_if_else, 'single line if/else statements should be multi-lined & enclosed with curly brackets'),
+    (r'^ *(if\s*\(|else|for\s*\()[^;{]+(;\')|^ *(if\s*\(|else|for\s*\()[^;{]+(;),',
+        add_brackets_to_multiline_if_else, 'single line if/else/for should be enclosed with curly braces'
+    ),
+    (r'\n{2,}', r'\n\n', 'at most 2 newlines'),
+    (r' *; *\n', r';\n', 'no spaces around `;`'),
+    (r'(.+) class (.+) *{', class_name, '1 space between `SampleClass {`'),
+    (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true, 'remove `== true` or `!= false`'),
+    (r'(.+)==\s*false\s*(.+)|(.+)!=\s*true\s*(.+)', process_if_false, 'convert `x == false|z != true ` to `!x`'),
+    (r'^ *(for\s*\(|if\s*\(|while\s*\(|} else if\s*\()[^{}]+{$', process_multiline_loop, '1 newline between multiline for loop and `{`'),
+    (r'(for|if|while) *\(.+\)\n+ *{', process_singleline_loop, 'no newline between singline forloop and `{`'),
+    (r'(?i)\bSELECT\b *' , lowercase_select, 'lowercase soql keyword `select`'),
+    (r'(?i)\bFROM\b *' , lowercase_from, 'lowercase soql keyword `from`'),
+    (r'(?i)\bWHERE\b *' , lowercase_where, 'lowercase soql keyword `where`'),
+    (r'(?i)\bLIMIT\b *' , lowercase_limit, 'lowercase soql keyword `limit`'),
+    (r'(?i)\bGROUP BY\b *' , lowercase_group_by,'lowercase soql keyword `group by`'),
+    (r'(?i)\bORDER BY\b *' , lowercase_order_by, 'lowercase soql keyword `order by`'),
+    (r'(?i)\bHAVING\b *' , lowercase_having, 'lowercase soql keyword `having`'),
+    (r'\n{2}\s*}', remove_trailing_newline, 'remove trailing newline at end of functions'),
+    (r'({\s*get;\s*set;\s*})',get_set_property, 'get/set for class variables'),
+    (r'}\n+\s*else', format_if_else_same_line, 'else/else if should start with closing } of if'),
+    (r'try *\{', try_condition, '1 space between `try {`'),
+    (r'\} *catch *\(', catch_condition, ' 1 space between `} catch (`'),
+    (r'__C\b', custom_field_rule, 'change `__C` to `__c`'),
+    (r'__R\b', custom_relation_rule, 'Change `__R` to `__r`'),
+    (r'^\s*System\.assertEquals\(true\s*,\s*(.+);$', process_assert_equals, 'assert equals true'),
+    (r'^\s*System\.assertEquals\(false\s*,\s*(.+);$', process_assert_equals, 'assert equals false'),
+]
 
 # these are case sensitive
-regex_quote_sensitive_dict = OrderedDict([
-    (r'if *\(', r'if ('),                                                                   # 1 space between `if (`
-    (r'\} *else *\{', r'} else {'),                                                         # 1 space between `} else {`
-    (r'\} *else *if *\(', r'} else if ('),                                                  # 1 space between `} else if (`
-    (r'for *\(', r'for ('),                                                                 # 1 space between `for (`
-    (r'while *\(', r'while ('),                                                             # 1 space between `while (`
-    (r'> *\{', r'> {'),                                                                     # 1 space between `> {`
-    (r'\) *\{', r') {'),                                                                    # 1 space between `) {`
-    #(r'(\, *[^\'\,\'|\/|\w|\n|\(|<])', process_comma),                                     # 1 space after `, `
-    (r'( *\, *)', ', '),                                                           # 1 space after `, `
-    (r', *\n', r', \n'),                                                                    # no trailing space after `, `
-    (r'(.+) (?i)testMethod (.+)', remove_test_method),                                      # replace `testMethod` with `@isTest`
-    (r'\'(.+?)\'|\'=\s*|\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*', process_equals),            # 1 space around ` = `
-    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*|\s*=\s*=\s*', process_equals),                         # ` == `
-    (r' *\+ *', r' + '),                                                                  # `+`    # broken example: '10+'
-    (r' *\- *', r' - '),                                                                  # `-`    # broken example: 'Pre-Sale'
-    (r' *\+ *= *', r' += '),                                                                # ` += `
-    (r' *\- *= *', r' -= '),                                                                # ` -= `
-    (r' *\* *= *', r' *= '),                                                                # ` *= `
-    (r' *= *> *', r' => '),                                                                 # ` => `
-    (r'\/\*[\s\S]*?\*\/|\/\/[\s\S].*| *\/ *= *', process_divide_equals),                    # ` /= `
-    (r' *\! *= *', r' != '),                                                                # ` != `
-    (r' *> *= *', r' >= '),                                                                 # ` >= `
-    (r' *< *= *', r' <= '),                                                                 # ` <= `
-    (r' *& *= *', r' &= '),                                                                 # ` &= `
-    (r' *\| *= *', ' |= '),                                                                 # ` |= `
-    (r' *\+\+ *| *\+  \+ *', r'++'),                                                        # no space around `++`
-    (r' *\-\- *', r'--'),                                                                   # no space around `--`
-    (r'\s*&& *', process_double_and),                                                       # && should have 1 space before and after.
-    (r'\s*\|\| *', process_double_or),                                                      # || should have 1 space before and after.
-])
+regex_quote_sensitive_list = [
+    (r'if *\(', if_condition_single_space, '1 space between `if (`'),
+    (r'\} *else *\{', else_condition_single_space, '1 space between `} else {`'),
+    (r'\} *else *if *\(', else_if_condition_single_space, '1 space between `} else if (`'),
+    (r'for *\(', for_condition_single_space, '1 space between `for (`'),
+    (r'while *\(', while_condition_single_space, '1 space between `while (`'),
+    (r'> *\{', angle_and_curly_condition_single_space, '1 space between `> {`'),
+    (r'\) *\{', parenthesis_and_curly_condition_single_space, '1 space between `) {`'),
+    (r'(.+) (?i)testMethod (.+)', remove_test_method, 'replace `testMethod` with `@isTest`'),
+]
