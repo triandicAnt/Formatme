@@ -252,7 +252,7 @@ def add_brackets_to_singleline_if_else(matchedobj):
         return '{0}{1}{2}\n{3}{4}\n{5}'.format(
             leading_spaces,
             stmt[:parenthesis_index + index_count + 1],
-            '{',
+            ' {',
             leading_spaces + ' ' * 4,
             stmt[parenthesis_index + index_count +1:].strip(),
             leading_spaces + '}'
