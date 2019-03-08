@@ -43,7 +43,7 @@ def run(text, filename):
     if len(messages) > 0:
         print(filename + ": is modified by Regex Expression")
         for x in messages:
-            print(x)
+            print("\t{0}".format(x))
     return text
 
 ############ HELPER METHODS ############
@@ -391,7 +391,7 @@ quote_insensitive_list = [
     ),
     (r'\n{2,}', r'\n\n', 'at most 2 newlines'),
     (r' *; *\n', r';\n', 'no spaces around `;`'),
-    (r'(.+) class (.+) *{', class_name, '1 space between `SampleClass {`'),
+    (r'(.+) class (.+) *{', class_name, '1 space between class name and {'),
     (r'(.+)(\s*==\s*true|\s*!=\s*false)(.+)', process_if_true, 'remove `== true` or `!= false`'),
     (r'(.+)==\s*false\s*(.+)|(.+)!=\s*true\s*(.+)', process_if_false, 'convert `x == false|z != true ` to `!x`'),
     (r'^ *(for\s*\(|if\s*\(|while\s*\(|} else if\s*\()[^{}]+{$', process_multiline_loop, '1 newline between multiline for loop and `{`'),
@@ -407,7 +407,7 @@ quote_insensitive_list = [
     (r'({\s*get;\s*set;\s*})',get_set_property, 'get/set for class variables'),
     (r'}\n+\s*else', format_if_else_same_line, 'else/else if should start with closing } of if'),
     (r'try *\{', try_condition, '1 space between `try {`'),
-    (r'\} *catch *\(', catch_condition, ' 1 space between `} catch (`'),
+    (r'\} *catch *\(', catch_condition, '1 space between `} catch (`'),
     (r'__C\b', custom_field_rule, 'change `__C` to `__c`'),
     (r'__R\b', custom_relation_rule, 'Change `__R` to `__r`'),
     (r'^\s*System\.assertEquals\(true\s*,\s*(.+);$', process_assert_equals, 'assert equals true'),
