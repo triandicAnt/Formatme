@@ -11,7 +11,7 @@ def run(text, filename):
     # filter out none comments and do the regex formatting
     code_parts = [x for x in code_parts if x is not None]
     code_parts = [x for x in code_parts if x.strip() not in ('*', '\n', ' ')]
-    messages = set()
+    messages = dict()
     for i, code in enumerate(code_parts):
         if not is_line_a_comment(code):
             changed_code = code
@@ -24,7 +24,7 @@ def run(text, filename):
                     for (key, value, message) in regex_quote_sensitive_list:
                         new_code_temp = re.sub(key, value, new_code, flags=re.MULTILINE)
                         if new_code_temp != new_code:
-                            messages.add(message)
+                            messages[message] = messages.get(message, 0) + 1
                         new_code = new_code_temp
                 if new_code != unquoted:
                     l[j] = new_code
@@ -36,14 +36,17 @@ def run(text, filename):
         new_text = re.sub(key, value, text, flags=re.MULTILINE)
         if text != new_text:
             text = new_text
-            messages.add(message)
+            messages[message] = messages.get(message, 0) + 1
     # replace content in view while removing any trailing whitespaces.
     text = text.rstrip(' +');
     # print all the rules that were detected and modified
     if len(messages) > 0:
-        print(filename + ": is modified by Regex Expression")
         for x in messages:
-            print("\t{0}".format(x))
+            print("{0} : {1} [x{2}]".format(
+                filename,
+                x,
+                messages[x]
+            ))
     return text
 
 ############ HELPER METHODS ############
